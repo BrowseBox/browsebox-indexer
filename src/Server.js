@@ -111,7 +111,7 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
 
 })
 
-app.delete("/api/image/delete", async (req, res) => {
+app.post("/api/image/delete", upload.single('image'), async (req, res) => {
     const type = req.body.type
     const id = req.body.id
     const index = req.body.index
