@@ -15,7 +15,7 @@ const prisma = new PrismaClient()
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
-app.post('/api/images/upload', upload.single('image'), async (req, res) => {
+app.post('/api/image/upload', upload.single('image'), async (req, res) => {
     const type = req.body.type
     const id = req.body.id
     const index = req.body.index
@@ -66,7 +66,7 @@ app.post('/api/images/upload', upload.single('image'), async (req, res) => {
 })
 
 // TODO: Ensure that if for some reason if two users share the same image, it doesn't get deleted.
-app.post('/api/images/update', upload.single('image'), async (req, res) => {
+app.post('/api/image/update', upload.single('image'), async (req, res) => {
     const type = req.body.type
     const id = req.body.id
     const index = req.body.index
@@ -111,7 +111,7 @@ app.post('/api/images/update', upload.single('image'), async (req, res) => {
 
 })
 
-app.delete("/api/images/delete", async (req, res) => {
+app.delete("/api/image/delete", async (req, res) => {
     const type = req.body.type
     const id = req.body.id
     const index = req.body.index
