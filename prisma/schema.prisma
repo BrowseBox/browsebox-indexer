@@ -1,0 +1,22 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:password@localhost:3306/images"
+}
+
+model profile {
+    userId Int @id
+    image String
+}
+
+model listing {
+    listingId Int @id
+    index Int
+    image String
+}
