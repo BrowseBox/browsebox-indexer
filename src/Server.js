@@ -44,7 +44,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
                 })
                 await uploadFile(fileBuffer, key, file.mimetype)
 
-                res.status(200).send(post)
+                res.status(200).send("Profile created.")
             }
 
             if (type === "listing") {
@@ -64,7 +64,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
                 })
                 await uploadFile(fileBuffer, key, file.mimetype)
 
-                res.status(200).send(post)
+                res.status(200).send("Listing created.")
             }
             break;
 
@@ -84,7 +84,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
                 await uploadFile(fileBuffer, key, file.mimetype)
                 await deleteFile(oldKey.image)
 
-                res.status(200).send(post)
+                res.status(200).send("Profile updated.")
             }
 
             if (type === "listing") {
@@ -101,7 +101,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
                 await uploadFile(fileBuffer, key, file.mimetype)
                 await deleteFile(oldKey.image)
 
-                res.status(200).send(post)
+                res.status(200).send("Listing updated.")
             }
             break;
     }
