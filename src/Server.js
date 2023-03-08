@@ -65,7 +65,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
     }
 })
 
-// TODO: Ensure that if for some reason if two users share the same image, it doesn't get deleted.
+// TODO: Ensure that if for some reason if two users share the same image, it doesn't get deleted
 app.post('/api/image/update', upload.single('image'), async (req, res) => {
     const type = req.body.type
     const id = req.body.id
