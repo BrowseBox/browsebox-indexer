@@ -132,7 +132,7 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
             break;
 
         case "listing":
-            const listing = await prisma.listing.findUnique({
+            const listing = await prisma.listing.findFirst({
                 where: { listingId: parseInt(id), index: parseInt(index) }
             })
 
