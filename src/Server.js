@@ -106,7 +106,7 @@ app.post('/api/image/update', cors(), upload.single('image'), async (req, res) =
             data: { index: parseInt(index), }
         })
         await uploadFile(fileBuffer, key, file.mimetype)
-        await deleteFile(oldKey.image)
+        await deleteFile(oldKey)
 
         res.status(200).send("Listing updated.")
     }
