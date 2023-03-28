@@ -102,7 +102,7 @@ app.post('/api/image/update', cors(), upload.single('image'), async (req, res) =
 
 
         const post = await prisma.listing.update({
-            where: { listingId: parseInt(id), image: key, },
+            where: { image: key, },
             data: { index: parseInt(index), }
         })
         await uploadFile(fileBuffer, key, file.mimetype)
