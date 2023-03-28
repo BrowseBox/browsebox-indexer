@@ -18,5 +18,8 @@
     "prisma": "^4.11.0",
     "sharp": "^0.31.3"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5"
+  }
 }
