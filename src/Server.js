@@ -154,4 +154,30 @@ app.post("/api/image/delete", cors(), upload.single('image'), async (req, res) =
     }
 })
 
+// get request returns image hash
+app.get('/api/image/retrieve/:type/:id/:index', cors(), async (req, res) => {
+    const type = req.params.type
+    const id = req.params.id
+    const index = req.params.index
+
+    switch (type) {
+        case "profile":
+            const profile = await prisma.profile.findUnique({
+                where: { userId: parseInt(id) }
+            })
+
+            res.status(200).send(profile.image)
+            break;
+
+        case "listing":
+            const listing = await prisma.listing.findFirst({
+                where: { listingId: parseInt(id), index: parseInt(index) }
+            })
+
+            res.status(200).send(listing.image)
+            break;
+    }
+})
+
+
 app.listen(7355, () => console.log("listening on port 7355"))
