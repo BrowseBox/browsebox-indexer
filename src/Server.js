@@ -48,7 +48,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
         const key = 'assets/img/listing/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6)
 
         const listingCheck = await prisma.listing.findUnique({
-            where: { listingId: parseInt(id), index: parseInt(index) }
+            where: { listingId: parseInt(id) }
         })
 
         if (listingCheck) {
@@ -95,9 +95,10 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
     if (type === "listing") {
         const key = 'assets/img/listing/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6)
 
-        const oldKey = await prisma.listing.findUnique({
+        const oldKey = await prisma.listing.findFirst({
             where: { listingId: parseInt(id), index: parseInt(index) }
         })
+
 
         const post = await prisma.listing.update({
             where: { listingId: parseInt(id), image: key, },
