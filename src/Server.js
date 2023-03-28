@@ -7,7 +7,7 @@ import sharp from 'sharp'
 import crypto from 'crypto'
 
 import { PrismaClient } from '@prisma/client'
-import { uploadFile, deleteFile } from './s3.js'
+import { uploadFile, deleteFile } from './S3.js'
 
 const app = express()
 const prisma = new PrismaClient()
@@ -146,4 +146,4 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
     }
 })
 
-app.listen(8080, () => console.log("listening on port 8080"))
+app.listen(7355, () => console.log("listening on port 7355"))

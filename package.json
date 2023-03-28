@@ -4,7 +4,7 @@
   "description": "Upload, edit, and retrieve image files from an Amazon S3 bucket.",
   "main": "index.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/Server.js"
   },
   "keywords": [],
   "author": "BrowseBox",
