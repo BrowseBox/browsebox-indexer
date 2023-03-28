@@ -17,56 +17,70 @@ const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
 app.post('/api/image/upload', cors(), upload.single('image'), async (req, res) => {
+    console.log("Received request to upload image!")
+    console.log("Extracting information from the request...")
     const type = req.body.type
     const id = req.body.id
     const index = req.body.index
     const file = req.file
 
+    console.log(`\tImage type: ${type}`)
+    console.log(`\tID: ${id}`)
+    console.log(`\tIndex: ${index}`)
+    console.log(`\tFile: ${file.originalname}`)
+
+    console.log("Generating image key and image hash...")
     const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex')
     const fileBuffer = await sharp(file.buffer).toBuffer()
 
     if (type === "profile") {
+        console.log("Creating profile request to S3")
         const key = 'assets/img/profile/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6)
 
+        console.log("Checking if profile already exists...")
         const profileCheck = await prisma.profile.findUnique({
             where: { userId: parseInt(id) }
         })
 
-        if (profileCheck) {
-            res.status(500).send("Profile already exists - use update instead.")
+        if (profileCheck !== null) {
+            res.status(500)
+            console.log("Profile already exists. Aborting.")
             return
+        } else {
+            const post = await prisma.profile.create({
+                data: { userId: parseInt(id), image: key, }
+            })
+            await uploadFile(fileBuffer, key, file.mimetype)
+
+            res.status(200)
+            console.log("Image upload complete.")
         }
-
-        const post = await prisma.profile.create({
-            data: { userId: parseInt(id), image: key, }
-        })
-        await uploadFile(fileBuffer, key, file.mimetype)
-
-        res.status(200).send("Profile created.")
     }
 
     if (type === "listing") {
+        console.log("Creating listing request to S3")
         const key = 'assets/img/listing/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6)
 
+        console.log("Checking if listing already exists...")
         const listingCheck = await prisma.listing.findUnique({
             where: { listingId: parseInt(id) }
         })
 
-        if (listingCheck) {
-            res.status(500).send("Listing already exists - use update instead.")
+        if (listingCheck != null) {
+            res.status(500)
             return
+        } else {
+            const post = await prisma.listing.create({
+                data: { listingId: parseInt(id), index: parseInt(index), image: key, }
+            })
+            await uploadFile(fileBuffer, key, file.mimetype)
+
+            res.status(200)
+            console.log("Image upload complete.")
         }
-
-        const post = await prisma.listing.create({
-            data: { listingId: parseInt(id), index: parseInt(index), image: key, }
-        })
-        await uploadFile(fileBuffer, key, file.mimetype)
-
-        res.status(200).send("Listing created.")
     }
 })
 
-// TODO: Ensure that if for some reason if two users share the same image, it doesn't get deleted
 app.post('/api/image/update', cors(), upload.single('image'), async (req, res) => {
     const type = req.body.type
     const id = req.body.id
@@ -90,27 +104,20 @@ app.post('/api/image/update', cors(), upload.single('image'), async (req, res) =
         await uploadFile(fileBuffer, key, file.mimetype)
         await deleteFile(oldKey.image)
 
-        res.status(200).send("Profile updated.")
-    }
+        res.status(200)
 
     if (type === "listing") {
         const key = 'assets/img/listing/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6)
-
-        const oldKey = await prisma.listing.findFirst({
-            where: { listingId: parseInt(id), index: parseInt(index) }
-        })
-
 
         const post = await prisma.listing.update({
             where: { listingId: parseInt(id) },
             data: { index: parseInt(index), }
         })
         await uploadFile(fileBuffer, key, file.mimetype)
-        await deleteFile(oldKey)
 
-        res.status(200).send("Listing updated.")
+        res.status(200)
     }
-
+    }
 })
 
 app.post("/api/image/delete", cors(), upload.single('image'), async (req, res) => {
@@ -129,7 +136,7 @@ app.post("/api/image/delete", cors(), upload.single('image'), async (req, res) =
             })
             await deleteFile(profile.image)
 
-            res.status(200).send("Profile deleted.")
+            res.status(200)
             break;
 
         case "listing":
@@ -137,12 +144,12 @@ app.post("/api/image/delete", cors(), upload.single('image'), async (req, res) =
                 where: { listingId: parseInt(id), index: parseInt(index) }
             })
 
-            await prisma.listing.delete({
+            await prisma.listing.deleteMany({
                 where: { listingId: parseInt(id), index: parseInt(index) }
             })
             await deleteFile(listing.image)
 
-            res.status(200).send("Listing deleted.")
+            res.status(200)
             break;
     }
 })
