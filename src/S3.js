@@ -9,10 +9,6 @@ const region = "us-west-2"
 const accessKeyId = process.env.S3_KEY
 const secretAccessKey = process.env.S3_SECRET
 
-/**
- * The Amazon S3 client.
- * @type {S3Client} s3Client
- */
 const s3Client = new S3Client({
     region,
     credentials: {
@@ -21,13 +17,6 @@ const s3Client = new S3Client({
     }
 })
 
-/**
- * Uploads the file to S3.
- * @param {*} fileBuffer The file buffer.
- * @param {*} fileName The file name.
- * @param {*} mimetype The file mime type.
- * @returns If the file was uploaded successfully.
- */
 export function uploadFile(fileBuffer, fileName, mimetype) {
     const uploadParams = {
         Bucket: bucketName,
@@ -39,7 +28,6 @@ export function uploadFile(fileBuffer, fileName, mimetype) {
 
     return s3Client.send(new PutObjectCommand(uploadParams));
 }
-
 
 export function deleteFile(fileName) {
     const deleteParams = {
