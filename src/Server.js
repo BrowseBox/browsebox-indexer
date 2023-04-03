@@ -11,6 +11,7 @@ import { PrismaClient } from '@prisma/client';
 import { rateLimit } from 'express-rate-limit';
 import { uploadFile, deleteFile } from './S3.js';
 import { log, LogLevel } from './utils/Logger.js';
+import { generateImageKey } from './utils/KeyGeneration.js';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -63,12 +64,12 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
         log("Generating image key and image hash...", LogLevel.VERBOSE);
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
         const fileBuffer = await sharp(file.buffer).toBuffer();
+        const key = generateImageKey(imageHash, type);
 
         if (type === "profile") {
             log("Creating profile request to S3...", LogLevel.VERBOSE);
-            const key = 'assets/img/profile/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6);
-
             log("Checking if profile already exists...", LogLevel.VERBOSE);
+
             const profileCheck = await prisma.profile.findUnique({
                 where: {
                     userId: parseInt(id)
@@ -106,9 +107,8 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
 
         if (type === "listing") {
             log("Creating listing request to S3.", LogLevel.VERBOSE);
-            const key = 'assets/img/listing/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6);
-
             log("Checking if listing already exists...", LogLevel.VERBOSE);
+
             const listingCheck = await prisma.listing.findUnique({
                 where: {
                     listingId: parseInt(id)
@@ -179,12 +179,12 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
         log("Generating image key and image hash...", LogLevel.VERBOSE);
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
         const fileBuffer = await sharp(file.buffer).toBuffer();
+        const key = generateImageKey(imageHash, type);
 
         if (type === "profile") {
             log("Updating profile image...", LogLevel.VERBOSE);
-            const key = 'assets/img/profile/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6);
-
             log("Fetching old image key from database...", LogLevel.VERBOSE);
+
             const oldKey = await prisma.profile.findUnique({
                 where: {
                     userId: parseInt(id)
@@ -223,9 +223,8 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
         // This issue is relatively minor until our S3 bucket starts to fill up, so we will leave it as is for now.
         if (type === "listing") {
             log("Updating listing image...", LogLevel.VERBOSE);
-            const key = 'assets/img/listing/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6);
-
             log("Updating listing in database...", LogLevel.VERBOSE);
+
             const post = await prisma.listing.update({
                 where: {
                     listingId: parseInt(id)
