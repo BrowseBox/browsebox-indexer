@@ -94,7 +94,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
             }
         }
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 
@@ -137,7 +137,7 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
             }
         }
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 
@@ -171,7 +171,7 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
                 break;
         }
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 
@@ -200,19 +200,28 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
                 break;
         }
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 
 app.use((error, req, res, next) => {
     if (error instanceof multer.MulterError) {
-        res.status(400).json({ message: 'File upload error' });
+        res.status(400).json({ message: 'File upload error' })
     } else if (error) {
         res.status(400).json({ message: error.message });
     } else {
         next();
     }
-});
+})
 
+const rateLimit = require('express-rate-limit');
+const limiter = rateLimit({
+    // 1 minute window for requests
+    windowMs: 1 * 60 * 1000,
+    // Limit each IP to 100 requests per windowMs
+    max: 100,
+})
+
+app.use(limiter);
 
 app.listen(7355, () => console.log("listening on port 7355"))
