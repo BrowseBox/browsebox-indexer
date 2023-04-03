@@ -7,6 +7,7 @@ import sharp from 'sharp'
 import crypto from 'crypto'
 import cors from 'cors'
 import { PrismaClient } from '@prisma/client'
+import { rateLimit } from 'express-rate-limit'
 import { uploadFile, deleteFile } from './S3.js'
 
 const app = express()
@@ -214,7 +215,6 @@ app.use((error, req, res, next) => {
     }
 })
 
-const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
     // 1 minute window for requests
     windowMs: 1 * 60 * 1000,

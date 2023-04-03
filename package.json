@@ -20,6 +20,7 @@
   },
   "type": "module",
   "dependencies": {
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "express-rate-limit": "^6.7.0"
   }
 }
