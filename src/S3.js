@@ -73,7 +73,6 @@ export async function deleteFile(key) {
 /**
  * Generates a pre-signed URL for the specified S3 object key.
  *
- * @async
  * @param {string} key - The S3 object key for the image.
  * @returns {Promise<string>} A promise that resolves to the pre-signed URL.
  * @throws {Error} If there is an error generating the signed URL.

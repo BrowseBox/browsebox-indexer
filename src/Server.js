@@ -10,7 +10,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { rateLimit } from 'express-rate-limit';
 import { uploadFile, deleteFile, getSignedUrl } from './S3.js';
-import { log, LogLevel } from './utils/Logger.js';
+import { log, LogLevel, padText } from './utils/Logger.js';
 import { generateImageKey } from './utils/KeyGeneration.js';
 
 const app = express();
@@ -59,12 +59,20 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
             return;
         }
 
-        log(`\tImage type: ${type}\tID: ${id}\tIndex: ${index}\tFile: ${file.originalname}`, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
+        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
+        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
+        log(padText("File:", 16) + file.originalname, LogLevel.VERBOSE);
 
         log("Generating image key and image hash...", LogLevel.VERBOSE);
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
+        log(`Image hash: ${imageHash}`, LogLevel.VERBOSE);
+
+        const key = generateImageKey(type, imageHash, file.mimetype);
+        log(`Image key: ${key}`, LogLevel.VERBOSE);
+
         const fileBuffer = await sharp(file.buffer).toBuffer();
-        const key = generateImageKey(imageHash, type);
+        log("File buffer created.", LogLevel.VERBOSE);
 
         if (type === "profile") {
             log("Creating profile request to S3...", LogLevel.VERBOSE);
@@ -147,6 +155,8 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
         res.status(500).json({
             message: 'Internal server error'
         });
+
+        log("Internal server error: " + error.message, LogLevel.ERROR);
     }
 });
 
@@ -174,12 +184,20 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
             return;
         }
 
-        log(`\tImage type: ${type}\tID: ${id}\tIndex: ${index}\tFile: ${file.originalname}`, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
+        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
+        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
+        log(padText("File:", 16) + file.originalname, LogLevel.VERBOSE);
 
         log("Generating image key and image hash...", LogLevel.VERBOSE);
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
+        log(`Image hash: ${imageHash}`, LogLevel.VERBOSE);
+
+        const key = generateImageKey(type, imageHash, file.mimetype);
+        log(`Image key: ${key}`, LogLevel.VERBOSE);
+
         const fileBuffer = await sharp(file.buffer).toBuffer();
-        const key = generateImageKey(imageHash, type);
+        log("File buffer created.", LogLevel.VERBOSE);
 
         if (type === "profile") {
             log("Updating profile image...", LogLevel.VERBOSE);
@@ -249,6 +267,8 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
         res.status(500).json({
             message: 'Internal server error'
         });
+
+        log("Internal server error: " + error.message, LogLevel.ERROR);
     }
 });
 
@@ -274,7 +294,9 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
             return;
         }
 
-        log(`\tImage type: ${type}\tID: ${id}\tIndex: ${index}`, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
+        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
+        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
 
         switch (type) {
             case "profile":
@@ -341,6 +363,8 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
         res.status(500).json({
             message: 'Internal server error'
         });
+
+        log("Internal server error: " + error.message, LogLevel.ERROR);
     }
 });
 
@@ -367,7 +391,9 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
             return;
         }
 
-        log(`\tImage type: ${type}\tID: ${id}\tIndex: ${index}`, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
+        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
+        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
 
         let key;
         switch (type) {
@@ -415,16 +441,21 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
         res.status(500).json({
             message: 'Internal server error'
         });
+
+        log("Internal server error: " + error.message, LogLevel.ERROR);
     }
 });
+
 
 // Error handling for multer errors and other unchecked errors.
 app.use((error, req, res, next) => {
     if (error instanceof multer.MulterError) {
+        log ("File upload error: " + error.message, LogLevel.ERROR);
         res.status(400).json({
             message: 'File upload error'
         });
     } else if (error) {
+        log ("Unchecked error: " + error.message, LogLevel.ERROR);
         res.status(400).json({
             message: error.message
         });
