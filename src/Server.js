@@ -10,6 +10,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { rateLimit } from 'express-rate-limit';
 import { uploadFile, deleteFile } from './S3.js';
+import { log, LogLevel } from './utils/Logger.js';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -43,27 +44,24 @@ app.use(cors());
  */
 app.post('/api/image/upload', upload.single('image'), async (req, res) => {
     try {
-        console.log("Received request to upload image!");
-        console.log("Extracting information from the request...");
+        log("Received request to upload image!", LogLevel.VERBOSE);
+        log("Extracting information from the request...", LogLevel.VERBOSE);
         const type = req.body.type;
         const id = req.body.id;
         const index = req.body.index;
         const file = req.file;
 
-        console.log(`\tImage type: ${type}`);
-        console.log(`\tID: ${id}`);
-        console.log(`\tIndex: ${index}`);
-        console.log(`\tFile: ${file.originalname}`);
+        log(`\tImage type: ${type}\tID: ${id}\tIndex: ${index}\tFile: ${file.originalname}`, LogLevel.VERBOSE);
 
-        console.log("Generating image key and image hash...");
+        log("Generating image key and image hash...", LogLevel.VERBOSE);
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
         const fileBuffer = await sharp(file.buffer).toBuffer();
 
         if (type === "profile") {
-            console.log("Creating profile request to S3");
+            log("Creating profile request to S3", LogLevel.VERBOSE);
             const key = 'assets/img/profile/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6);
 
-            console.log("Checking if profile already exists...");
+            log("Checking if profile already exists...", LogLevel.VERBOSE);
             const profileCheck = await prisma.profile.findUnique({
                 where: {
                     userId: parseInt(id)
@@ -72,7 +70,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
 
             if (profileCheck !== null) {
                 res.status(500);
-                console.log("Profile already exists. Aborting.");
+                log("Profile already exists. Aborting.", LogLevel.WARNING);
                 return;
             } else {
                 const post = await prisma.profile.create({
@@ -84,15 +82,15 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 await uploadFile(fileBuffer, key, file.mimetype);
 
                 res.status(200);
-                console.log("Image upload complete.");
+                log("Image upload complete.", LogLevel.VERBOSE);
             }
         }
 
         if (type === "listing") {
-            console.log("Creating listing request to S3");
+            log("Creating listing request to S3", LogLevel.VERBOSE);
             const key = 'assets/img/listing/' + imageHash.toString().substring(0, 1) + '/' + imageHash.toString().substring(0, 2) + '/' + imageHash + '.' + file.mimetype.substring(6);
 
-            console.log("Checking if listing already exists...");
+            log("Checking if listing already exists...", LogLevel.VERBOSE);
             const listingCheck = await prisma.listing.findUnique({
                 where: {
                     listingId: parseInt(id)
@@ -113,7 +111,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 await uploadFile(fileBuffer, key, file.mimetype);
 
                 res.status(200);
-                console.log("Image upload complete.");
+                log("Image upload complete.", LogLevel.VERBOSE);
             }
         }
     } catch (error) {
@@ -307,4 +305,4 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-app.listen(7355, () => console.log("listening on port 7355"));
+app.listen(7355, () => log("Starting BrowseBox indexer service on port: 7355", LogLevel.VERBOSE));
