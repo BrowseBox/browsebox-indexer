@@ -86,7 +86,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 return;
             } else {
                 log("Creating profile in database.", LogLevel.VERBOSE);
-                const post = await prisma.profile.create({
+                await prisma.profile.create({
                     data: {
                         userId: parseInt(id),
                         image: key,
@@ -124,7 +124,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 return;
             } else {
                 log("Creating listing in database.", LogLevel.VERBOSE);
-                const post = await prisma.listing.create({
+                await prisma.listing.create({
                     data: {
                         listingId: parseInt(id),
                         index: parseInt(index),
@@ -196,7 +196,7 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
             });
 
             log("Updating image key in database...", LogLevel.VERBOSE);
-            const post = await prisma.profile.update({
+            await prisma.profile.update({
                 where: {
                     userId: parseInt(id),
                 },
@@ -225,7 +225,7 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
             log("Updating listing image...", LogLevel.VERBOSE);
             log("Updating listing in database...", LogLevel.VERBOSE);
 
-            const post = await prisma.listing.update({
+            await prisma.listing.update({
                 where: {
                     listingId: parseInt(id)
                 },
