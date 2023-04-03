@@ -9,7 +9,7 @@ import cors from 'cors';
 
 import { PrismaClient } from '@prisma/client';
 import { rateLimit } from 'express-rate-limit';
-import { uploadFile, deleteFile } from './S3.js';
+import { uploadFile, deleteFile, getSignedUrl } from './S3.js';
 import { log, LogLevel } from './utils/Logger.js';
 import { generateImageKey } from './utils/KeyGeneration.js';
 
@@ -344,7 +344,6 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
     }
 });
 
-
 /**
  * @route GET /api/image/retrieve/:type/:id/:index
  * @desc Retrieve the image hash for a user profile or listing.
@@ -370,6 +369,7 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
 
         log(`\tImage type: ${type}\tID: ${id}\tIndex: ${index}`, LogLevel.VERBOSE);
 
+        let key;
         switch (type) {
             case "profile":
                 log("Retrieving profile image...", LogLevel.VERBOSE);
@@ -383,7 +383,7 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
                     return;
                 });
 
-                res.status(200).send(profile.image);
+                key = profile.image;
                 log("Profile image retrieved.", LogLevel.VERBOSE);
                 break;
 
@@ -400,17 +400,23 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
                     return;
                 });
 
-                res.status(200).send(listing.image);
+                key = listing.image;
                 log("Listing image retrieved.", LogLevel.VERBOSE);
                 break;
+
+            default:
+                res.status(400).json({ message: 'Invalid image type' });
+                return;
         }
+
+        const url = await getSignedUrl(key);
+        res.status(200).json({ imageUrl: url });
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error'
         });
     }
 });
-
 
 // Error handling for multer errors and other unchecked errors.
 app.use((error, req, res, next) => {
