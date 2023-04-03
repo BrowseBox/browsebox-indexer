@@ -26,7 +26,10 @@ const upload = multer({
     },
 });
 
-app.post('/api/image/upload', cors(), upload.single('image'), async (req, res) => {
+app.use(express.json());
+app.use(cors());
+
+app.post('/api/image/upload', upload.single('image'), async (req, res) => {
     console.log("Received request to upload image!")
     console.log("Extracting information from the request...")
     const type = req.body.type
@@ -91,7 +94,7 @@ app.post('/api/image/upload', cors(), upload.single('image'), async (req, res) =
     }
 })
 
-app.post('/api/image/update', cors(), upload.single('image'), async (req, res) => {
+app.post('/api/image/update', upload.single('image'), async (req, res) => {
     const type = req.body.type
     const id = req.body.id
     const index = req.body.index
@@ -130,7 +133,7 @@ app.post('/api/image/update', cors(), upload.single('image'), async (req, res) =
     }
 })
 
-app.post("/api/image/delete", cors(), upload.single('image'), async (req, res) => {
+app.post("/api/image/delete", upload.single('image'), async (req, res) => {
     const type = req.body.type
     const id = req.body.id
     const index = req.body.index
@@ -165,7 +168,7 @@ app.post("/api/image/delete", cors(), upload.single('image'), async (req, res) =
 })
 
 // get request returns image hash
-app.get('/api/image/retrieve/:type/:id/:index', cors(), async (req, res) => {
+app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
     const type = req.params.type
     const id = req.params.id
     const index = req.params.index
