@@ -204,5 +204,15 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
     }
 })
 
+app.use((error, req, res, next) => {
+    if (error instanceof multer.MulterError) {
+        res.status(400).json({ message: 'File upload error' });
+    } else if (error) {
+        res.status(400).json({ message: error.message });
+    } else {
+        next();
+    }
+});
+
 
 app.listen(7355, () => console.log("listening on port 7355"))
