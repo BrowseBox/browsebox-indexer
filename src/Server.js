@@ -6,15 +6,25 @@ import multer from 'multer'
 import sharp from 'sharp'
 import crypto from 'crypto'
 import cors from 'cors'
-
 import { PrismaClient } from '@prisma/client'
 import { uploadFile, deleteFile } from './S3.js'
 
 const app = express()
 const prisma = new PrismaClient()
 
-const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
+// Multer configuration
+const upload = multer({
+    storage: multer.memoryStorage(),
+    // Add 10MB file size limit on requests.
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type'), false);
+        }
+    },
+});
 
 app.post('/api/image/upload', cors(), upload.single('image'), async (req, res) => {
     console.log("Received request to upload image!")
