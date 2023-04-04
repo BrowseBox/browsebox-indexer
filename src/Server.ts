@@ -431,6 +431,7 @@ app.get('/api/image/retrieve/profile/:id', async (req, res) => {
         } else {
             res.status(500).json({ message: "Failed to retrieve profile from database." });
             log("Failed to retrieve profile from database.", LogLevel.ERROR);
+            return;
         }
 
         const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
@@ -488,6 +489,7 @@ app.get('/api/image/retrieve/listing/:id/:index', async (req, res) => {
         } else {
             res.status(500).json({ message: "Failed to retrieve listing from database." });
             log("Failed to retrieve listing from database.", LogLevel.ERROR);
+            return;
         }
 
         const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
