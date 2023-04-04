@@ -1,7 +1,7 @@
 // Copyright (c) BrowseBox. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { LogLevel, log } from "./utils/Logger.js";
 
 const bucketName = process.env.S3_BUCKET
@@ -68,30 +68,4 @@ export async function deleteFile(key) {
         log(`Error deleting file: ${error.message}`, LogLevel.ERROR);
         throw error;
     }
-}
-
-/**
- * Generates a pre-signed URL for the specified S3 object key.
- *
- * @param {string} key - The S3 object key for the image.
- * @returns {Promise<string>} A promise that resolves to the pre-signed URL.
- * @throws {Error} If there is an error generating the signed URL.
- */
-export async function getSignedUrl(key) {
-    const params = {
-        Bucket: bucketName,
-        Key: key
-    }
-
-    return new Promise((resolve, reject) => {
-        s3Client.getSignedUrl('getObject', params, (error, url) => {
-            if (error) {
-                log(`Error generating signed URL: ${error.message}`, LogLevel.ERROR);
-                reject(error);
-            } else {
-                log(`Generated signed URL: ${url}`, LogLevel.VERBOSE);
-                resolve(url);
-            }
-        });
-    });
 }

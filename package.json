@@ -9,18 +9,15 @@
   "keywords": [],
   "author": "BrowseBox",
   "license": "MIT",
-  "devDependencies": {
+  "type": "module",
+  "dependencies": {
     "@aws-sdk/client-s3": "^3.281.0",
-    "@aws-sdk/s3-request-presigner": "^3.281.0",
     "@prisma/client": "^4.11.0",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^6.7.0",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
     "prisma": "^4.11.0",
     "sharp": "^0.31.3"
-  },
-  "type": "module",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express-rate-limit": "^6.7.0"
   }
 }

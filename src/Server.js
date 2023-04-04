@@ -9,7 +9,7 @@ import cors from 'cors';
 
 import { PrismaClient } from '@prisma/client';
 import { rateLimit } from 'express-rate-limit';
-import { uploadFile, deleteFile, getSignedUrl } from './S3.js';
+import { uploadFile, deleteFile } from './S3.js';
 import { log, LogLevel, padText } from './utils/Logger.js';
 import { generateImageKey } from './utils/KeyGeneration.js';
 
@@ -53,9 +53,9 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
         const file = req.file;
 
         // Validate the request to ensure all required parameters are present.
-        if (!type || !id || (type === 'listing' && index === undefined) || !file) {
-            res.status(400).json({ message: "Missing required parameters." });
-            log("Missing required parameters. Aborting.", LogLevel.WARNING);
+        if (!type || !id || (type === 'listing' && index === undefined) || !file || (type !== 'profile' && type !== 'listing')) {
+            res.status(400).json({ message: "Missing or invalid required parameters." });
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
         }
 
@@ -64,7 +64,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
         log(padText("Index:", 16) + index, LogLevel.VERBOSE);
         log(padText("File:", 16) + file.originalname, LogLevel.VERBOSE);
 
-        log("Generating image key and image hash...", LogLevel.VERBOSE);
+        log("Generating image hash and image key...", LogLevel.VERBOSE);
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
         log(`Image hash: ${imageHash}`, LogLevel.VERBOSE);
 
@@ -129,6 +129,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
 
             if (listingCheck != null) {
                 res.status(400).json({ message: "Listing already exists." });
+                log("Listing already exists. Aborting.", LogLevel.WARNING);
                 return;
             } else {
                 log("Creating listing in database.", LogLevel.VERBOSE);
@@ -147,7 +148,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 log("Uploading image to S3...", LogLevel.VERBOSE);
                 await uploadFile(fileBuffer, key, file.mimetype);
 
-                res.status(200);
+                res.status(200).json({ message: "Image upload complete." });
                 log("Image upload complete.", LogLevel.VERBOSE);
             }
         }
@@ -178,9 +179,9 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
         const file = req.file;
 
         // Validate the request to ensure all required parameters are present.
-        if (!type || !id || (type === 'listing' && index === undefined) || !file) {
-            res.status(400).json({ message: "Missing required parameters." });
-            log("Missing required parameters. Aborting.", LogLevel.WARNING);
+        if (!type || !id || (type === 'listing' && index === undefined) || !file || (type !== 'profile' && type !== 'listing')) {
+            res.status(400).json({ message: "Missing or invalid required parameters." });
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
         }
 
@@ -189,7 +190,7 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
         log(padText("Index:", 16) + index, LogLevel.VERBOSE);
         log(padText("File:", 16) + file.originalname, LogLevel.VERBOSE);
 
-        log("Generating image key and image hash...", LogLevel.VERBOSE);
+        log("Generating image hash and image key...", LogLevel.VERBOSE);
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
         log(`Image hash: ${imageHash}`, LogLevel.VERBOSE);
 
@@ -288,9 +289,9 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
         const index = req.body.index;
 
         // Validate input to ensure all required parameters are present.
-        if (!type || !id || (type === 'listing' && index === undefined)) {
-            res.status(400).json({ message: "Missing required parameters." });
-            log("Missing required parameters. Aborting.", LogLevel.WARNING);
+        if (!type || !id || (type === 'listing' && index === undefined) || (type !== 'profile' && type !== 'listing')) {
+            res.status(400).json({ message: "Missing or invalid required parameters." });
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
         }
 
@@ -384,13 +385,6 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
         const id = req.params.id;
         const index = req.params.index;
 
-        // Validate input to ensure all required parameters are present.
-        if (!type || !id || (type === 'listing' && index === undefined)) {
-            res.status(400).json({ message: "Missing required parameters." });
-            log("Missing required parameters. Aborting.", LogLevel.WARNING);
-            return;
-        }
-
         log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
         log(padText("ID:", 16) + id, LogLevel.VERBOSE);
         log(padText("Index:", 16) + index, LogLevel.VERBOSE);
@@ -410,6 +404,7 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
                 });
 
                 key = profile.image;
+                log(`Image Key: ${key}`, LogLevel.VERBOSE);
                 log("Profile image retrieved.", LogLevel.VERBOSE);
                 break;
 
@@ -427,16 +422,15 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
                 });
 
                 key = listing.image;
+                log(`Image Key: ${key}`, LogLevel.VERBOSE);
                 log("Listing image retrieved.", LogLevel.VERBOSE);
                 break;
-
-            default:
-                res.status(400).json({ message: 'Invalid image type' });
-                return;
         }
 
-        const url = await getSignedUrl(key);
+        const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
+        log("Sending image URL to client.", LogLevel.VERBOSE);
         res.status(200).json({ imageUrl: url });
+        log("Image URL: " + url, LogLevel.VERBOSE);
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error'
