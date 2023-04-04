@@ -479,16 +479,16 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
 
 
 // Error handling for multer errors and other unchecked errors.
-app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
     if (error instanceof multer.MulterError) {
         log ("File upload error: " + error.message, LogLevel.ERROR);
         res.status(400).json({
             message: 'File upload error'
         });
     } else if (error) {
-        log ("Unchecked error: " + error.message, LogLevel.ERROR);
+        log ("Unchecked error: " + error, LogLevel.ERROR);
         res.status(400).json({
-            message: error.message
+            message: error
         });
     } else {
         next();
