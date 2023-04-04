@@ -290,6 +290,9 @@ app.post('/api/image/update', upload.single('image'), async (req: Request, res: 
  * @param {number} index - The order of the image for listing images. Only required for listing images.
  */
 app.post("/api/image/delete", upload.single('image'), async (req, res) => {
+    let profile;
+    let listing;
+
     try {
         log("Received API request to delete image.");
         log("Extracting information from the request...");
@@ -311,7 +314,7 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
         switch (type) {
             case "profile":
                 log("Deleting profile image...");
-                const profile = await prisma.profile.findUnique({
+                profile = await prisma.profile.findUnique({
                     where: {
                         userId: parseInt(id)
                     }
@@ -346,7 +349,7 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
 
             case "listing":
                 log("Deleting listing image...");
-                const listing = await prisma.listing.findFirst({
+                listing = await prisma.listing.findFirst({
                     where: {
                         listingId: parseInt(id),
                         index: parseInt(index)
@@ -401,6 +404,9 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
  * @returns {string} imageHash - The hash of the requested image.
  */
 app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
+    let profile;
+    let listing;
+
     try {
         log("Received API request to retrieve image.");
         log("Extracting information from the request...");
@@ -416,7 +422,7 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
         switch (type) {
             case "profile":
                 log("Retrieving profile image...");
-                const profile = await prisma.profile.findUnique({
+                profile = await prisma.profile.findUnique({
                     where: {
                         userId: parseInt(id)
                     }
@@ -439,7 +445,7 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
 
             case "listing":
                 log("Retrieving listing image...");
-                const listing = await prisma.listing.findFirst({
+                listing = await prisma.listing.findFirst({
                     where: {
                         listingId: parseInt(id),
                         index: parseInt(index)
