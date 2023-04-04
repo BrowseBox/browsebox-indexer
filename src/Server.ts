@@ -152,12 +152,14 @@ app.post('/api/image/upload', upload.single('image'), async (req: Request, res: 
                 log("Image upload complete.");
             }
         }
-    } catch (error: any) {
-        res.status(500).json({
-            message: 'Internal server error'
-        });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({
+                message: 'Internal server error'
+            });
 
-        log("Internal server error: " + error.message, LogLevel.ERROR);
+            log("Internal server error: " + error.message, LogLevel.ERROR);
+        }
     }
 });
 
@@ -269,12 +271,14 @@ app.post('/api/image/update', upload.single('image'), async (req: Request, res: 
             res.status(200).json({ message: "Listing image updated." });
             log("Listing image updated.");
         }
-    } catch (error: any) {
-        res.status(500).json({
-            message: 'Internal server error'
-        });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({
+                message: 'Internal server error'
+            });
 
-        log("Internal server error: " + error.message, LogLevel.ERROR);
+            log("Internal server error: " + error.message, LogLevel.ERROR);
+        }
     }
 });
 
@@ -377,12 +381,14 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
                     break;
                 }
         }
-    } catch (error: any) {
-        res.status(500).json({
-            message: 'Internal server error'
-        });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({
+                message: 'Internal server error'
+            });
 
-        log("Internal server error: " + error.message, LogLevel.ERROR);
+            log("Internal server error: " + error.message, LogLevel.ERROR);
+        }
     }
 });
 
@@ -460,12 +466,14 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
         log("Sending image URL to client.");
         res.status(200).json({ imageUrl: url });
         log("Image URL: " + url);
-    } catch (error: any) {
-        res.status(500).json({
-            message: 'Internal server error'
-        });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({
+                message: 'Internal server error'
+            });
 
-        log("Internal server error: " + error.message, LogLevel.ERROR);
+            log("Internal server error: " + error.message, LogLevel.ERROR);
+        }
     }
 });
 

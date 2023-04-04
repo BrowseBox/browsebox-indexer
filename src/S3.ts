@@ -42,9 +42,11 @@ export async function uploadFile(fileBuffer: Buffer, key: string, mimetype: stri
     try {
         await s3Client.send(new PutObjectCommand(uploadParams));
         log(`File uploaded successfully: ${key}`);
-    } catch (error: any) {
+    } catch (error) {
+        if (error instanceof Error) {
             log(`Error uploading file: ${error.message}`, LogLevel.ERROR);
-        throw error;
+            throw error;
+        }
     }
 }
 
@@ -65,7 +67,9 @@ export async function deleteFile(key: string): Promise<void> {
         await s3Client.send(new DeleteObjectCommand(deleteParams));
         log(`File deleted successfully: ${key}`);
     } catch (error: any) {
-            log(`Error deleting file: ${error.message}`, LogLevel.ERROR);
-        throw error;
+        if (error instanceof Error) {
+            log(`Error uploading file: ${error.message}`, LogLevel.ERROR);
+            throw error;
+        }
     }
 }
