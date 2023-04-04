@@ -4,13 +4,11 @@
   "description": "Upload, edit, and retrieve image files from an Amazon S3 bucket.",
   "main": "index.js",
   "scripts": {
-    "prod": "node src/Server.ts",
-    "dev": "nodemon src/Server.ts"
+    "start": "nodemon src/Server.ts"
   },
   "keywords": [],
   "author": "BrowseBox",
   "license": "MIT",
-  "module": "true",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.281.0",
     "@prisma/client": "^4.11.0",
