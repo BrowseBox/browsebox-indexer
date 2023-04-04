@@ -1,6 +1,6 @@
 {
   "name": "browsebox-indexer",
-  "version": "2022.403.1",
+  "version": "2022.403.2",
   "description": "Upload, edit, and retrieve image files from an Amazon S3 bucket.",
   "main": "index.js",
   "scripts": {
