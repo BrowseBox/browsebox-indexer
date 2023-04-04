@@ -9,10 +9,10 @@
  * @param {string} mimetype - The mimetype of the image file.
  * @return {string} - The generated image key.
  */
-function generateImageKey(type, imageHash, mimetype) {
-    const extension = mimetype.split('/')[1];
-    const folder = type === "profile" ? "profile" : "listing";
-    const key = `assets/img/${folder}/${imageHash.substring(0, 1)}/${imageHash.substring(0, 2)}/${imageHash}.${extension}`;
+function generateImageKey(type: string, imageHash: string, mimetype: string): string {
+    const extension: string = mimetype.split('/')[1];
+    const folder: string = type === "profile" ? "profile" : "listing";
+    const key: string = `assets/img/${folder}/${imageHash.substring(0, 1)}/${imageHash.substring(0, 2)}/${imageHash}.${extension}`;
     return key;
 }
 

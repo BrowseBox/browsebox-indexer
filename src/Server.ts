@@ -1,19 +1,19 @@
 // Copyright (c) BrowseBox. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-import express from 'express';
-import multer from 'multer';
 import sharp from 'sharp';
 import crypto from 'crypto';
 import cors from 'cors';
 
-import { PrismaClient } from '@prisma/client';
-import { rateLimit } from 'express-rate-limit';
-import { uploadFile, deleteFile } from './S3.js';
-import { log, LogLevel, padText } from './utils/Logger.js';
-import { generateImageKey } from './utils/KeyGeneration.js';
+import express, { Express, Request, Response, NextFunction } from 'express';
+import multer, { Options } from 'multer';
 
-const app = express();
+import { PrismaClient } from '@prisma/client';
+import { uploadFile, deleteFile } from './S3.ts';
+import { log, LogLevel, padText } from './utils/Logger.ts';
+import { generateImageKey } from './utils/KeyGeneration.ts';
+
+const app: Express = express();
 const prisma = new PrismaClient();
 
 // Multer configuration details.
@@ -23,14 +23,14 @@ const upload = multer({
     limits: {
         fileSize: 10 * 1024 * 1024
     },
-    fileFilter: (req, file, cb) => {
+    fileFilter: (req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
             cb(new Error('Invalid file type'), false);
         }
     },
-});
+} as Options);
 
 app.use(express.json());
 app.use(cors());
@@ -43,10 +43,10 @@ app.use(cors());
  * @param {number} index - The order of the image for listing images. Only required for listing images.
  * @param {File} image - The image file to be uploaded.
  */
-app.post('/api/image/upload', upload.single('image'), async (req, res) => {
+app.post('/api/image/upload', upload.single('image'), async (req: Request, res: Response) => {
     try {
-        log("Received API request to upload image.", LogLevel.VERBOSE);
-        log("Extracting information from the request...", LogLevel.VERBOSE);
+        log("Received API request to upload image.");
+        log("Extracting information from the request...");
         const type = req.body.type;
         const id = req.body.id;
         const index = req.body.index;
@@ -59,24 +59,24 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
             return;
         }
 
-        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
-        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
-        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
-        log(padText("File:", 16) + file.originalname, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type);
+        log(padText("ID:", 16) + id);
+        log(padText("Index:", 16) + index);
+        log(padText("File:", 16) + file.originalname);
 
-        log("Generating image hash and image key...", LogLevel.VERBOSE);
+        log("Generating image hash and image key...");
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
-        log(`Image hash: ${imageHash}`, LogLevel.VERBOSE);
+        log(`Image hash: ${imageHash}`);
 
         const key = generateImageKey(type, imageHash, file.mimetype);
-        log(`Image key: ${key}`, LogLevel.VERBOSE);
+        log(`Image key: ${key}`);
 
         const fileBuffer = await sharp(file.buffer).toBuffer();
-        log("File buffer created.", LogLevel.VERBOSE);
+        log("File buffer created.");
 
         if (type === "profile") {
-            log("Creating profile request to S3...", LogLevel.VERBOSE);
-            log("Checking if profile already exists...", LogLevel.VERBOSE);
+            log("Creating profile request to S3...");
+            log("Checking if profile already exists...");
 
             const profileCheck = await prisma.profile.findUnique({
                 where: {
@@ -93,7 +93,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 log("Profile already exists. Aborting.", LogLevel.WARNING);
                 return;
             } else {
-                log("Creating profile in database.", LogLevel.VERBOSE);
+                log("Creating profile in database.");
                 await prisma.profile.create({
                     data: {
                         userId: parseInt(id),
@@ -109,13 +109,13 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 await uploadFile(fileBuffer, key, file.mimetype);
 
                 res.status(200).json({ message: "Image upload complete." });
-                log("Image upload complete.", LogLevel.VERBOSE);
+                log("Image upload complete.");
             }
         }
 
         if (type === "listing") {
-            log("Creating listing request to S3.", LogLevel.VERBOSE);
-            log("Checking if listing already exists...", LogLevel.VERBOSE);
+            log("Creating listing request to S3.");
+            log("Checking if listing already exists...");
 
             const listingCheck = await prisma.listing.findUnique({
                 where: {
@@ -132,7 +132,7 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                 log("Listing already exists. Aborting.", LogLevel.WARNING);
                 return;
             } else {
-                log("Creating listing in database.", LogLevel.VERBOSE);
+                log("Creating listing in database.");
                 await prisma.listing.create({
                     data: {
                         listingId: parseInt(id),
@@ -145,14 +145,14 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
                     return;
                 });
 
-                log("Uploading image to S3...", LogLevel.VERBOSE);
+                log("Uploading image to S3...");
                 await uploadFile(fileBuffer, key, file.mimetype);
 
                 res.status(200).json({ message: "Image upload complete." });
-                log("Image upload complete.", LogLevel.VERBOSE);
+                log("Image upload complete.");
             }
         }
-    } catch (error) {
+    } catch (error: any) {
         res.status(500).json({
             message: 'Internal server error'
         });
@@ -169,10 +169,10 @@ app.post('/api/image/upload', upload.single('image'), async (req, res) => {
  * @param {number} index - The order of the image for listing images. Only required for listing images.
  * @param {File} image - The updated image file.
  */
-app.post('/api/image/update', upload.single('image'), async (req, res) => {
+app.post('/api/image/update', upload.single('image'), async (req: Request, res: Response) => {
     try {
-        log("Received API request to update image.", LogLevel.VERBOSE);
-        log("Extracting information from the request...", LogLevel.VERBOSE);
+        log("Received API request to update image.");
+        log("Extracting information from the request...");
         const type = req.body.type;
         const id = req.body.id;
         const index = req.body.index;
@@ -185,24 +185,24 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
             return;
         }
 
-        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
-        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
-        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
-        log(padText("File:", 16) + file.originalname, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type);
+        log(padText("ID:", 16) + id);
+        log(padText("Index:", 16) + index);
+        log(padText("File:", 16) + file.originalname);
 
-        log("Generating image hash and image key...", LogLevel.VERBOSE);
+        log("Generating image hash and image key...");
         const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
-        log(`Image hash: ${imageHash}`, LogLevel.VERBOSE);
+        log(`Image hash: ${imageHash}`);
 
         const key = generateImageKey(type, imageHash, file.mimetype);
-        log(`Image key: ${key}`, LogLevel.VERBOSE);
+        log(`Image key: ${key}`);
 
         const fileBuffer = await sharp(file.buffer).toBuffer();
-        log("File buffer created.", LogLevel.VERBOSE);
+        log("File buffer created.");
 
         if (type === "profile") {
-            log("Updating profile image...", LogLevel.VERBOSE);
-            log("Fetching old image key from database...", LogLevel.VERBOSE);
+            log("Updating profile image...");
+            log("Fetching old image key from database...");
 
             const oldKey = await prisma.profile.findUnique({
                 where: {
@@ -214,35 +214,40 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
                 return;
             });
 
-            log("Updating image key in database...", LogLevel.VERBOSE);
-            await prisma.profile.update({
-                where: {
-                    userId: parseInt(id),
-                },
-                data: {
-                    image: key,
-                }
-            }).catch(error => {
-                log("Database error while updating image key: " + error.message, LogLevel.ERROR);
-                res.status(500).json({ message: "Database error while updating image key." });
-                return;
-            });
+            if (oldKey) {
+                log("Updating image key in database...");
+                await prisma.profile.update({
+                    where: {
+                        userId: parseInt(id),
+                    },
+                    data: {
+                        image: key,
+                    }
+                }).catch(error => {
+                    log("Database error while updating image key: " + error.message, LogLevel.ERROR);
+                    res.status(500).json({ message: "Database error while updating image key." });
+                    return;
+                });
 
-            log("Uploading image to S3...", LogLevel.VERBOSE);
-            await uploadFile(fileBuffer, key, file.mimetype);
+                log("Uploading image to S3...");
+                await uploadFile(fileBuffer, key, file.mimetype);
 
-            log("Deleting old image from S3...", LogLevel.VERBOSE);
-            await deleteFile(oldKey.image);
+                log("Deleting old image from S3...");
+                await deleteFile(oldKey.image);
 
-            res.status(200).json({ message: "Profile image updated." });
-            log("Profile image updated.", LogLevel.VERBOSE);
+                res.status(200).json({ message: "Profile image updated." });
+                log("Profile image updated.");
+            } else {
+                res.status(500).json({ message: "Failed to fetch old key from database." });
+                log("Failed to fetch old key from database.", LogLevel.ERROR);
+            }
         }
 
         // For listings, we are unable to delete the old image from S3 due to Prisma requiring a single filter for the where clause.
         // This issue is relatively minor until our S3 bucket starts to fill up, so we will leave it as is for now.
         if (type === "listing") {
-            log("Updating listing image...", LogLevel.VERBOSE);
-            log("Updating listing in database...", LogLevel.VERBOSE);
+            log("Updating listing image...");
+            log("Updating listing in database...");
 
             await prisma.listing.update({
                 where: {
@@ -258,13 +263,13 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
                 return;
             });
 
-            log("Uploading image to S3...", LogLevel.VERBOSE);
+            log("Uploading image to S3...");
             await uploadFile(fileBuffer, key, file.mimetype);
 
             res.status(200).json({ message: "Listing image updated." });
-            log("Listing image updated.", LogLevel.VERBOSE);
+            log("Listing image updated.");
         }
-    } catch (error) {
+    } catch (error: any) {
         res.status(500).json({
             message: 'Internal server error'
         });
@@ -282,8 +287,8 @@ app.post('/api/image/update', upload.single('image'), async (req, res) => {
  */
 app.post("/api/image/delete", upload.single('image'), async (req, res) => {
     try {
-        log("Received API request to delete image.", LogLevel.VERBOSE);
-        log("Extracting information from the request...", LogLevel.VERBOSE);
+        log("Received API request to delete image.");
+        log("Extracting information from the request...");
         const type = req.body.type;
         const id = req.body.id;
         const index = req.body.index;
@@ -295,13 +300,13 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
             return;
         }
 
-        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
-        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
-        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type);
+        log(padText("ID:", 16) + id);
+        log(padText("Index:", 16) + index);
 
         switch (type) {
             case "profile":
-                log("Deleting profile image...", LogLevel.VERBOSE);
+                log("Deleting profile image...");
                 const profile = await prisma.profile.findUnique({
                     where: {
                         userId: parseInt(id)
@@ -312,25 +317,31 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
                     return;
                 });
 
-                await prisma.profile.delete({
-                    where: {
-                        userId: parseInt(id)
-                    }
-                }).catch(error => {
-                    log("Database error while deleting profile: " + error.message, LogLevel.ERROR);
-                    res.status(500).json({ message: "Database error while deleting profile." });
-                    return;
-                });
+                if (profile) {
+                    await prisma.profile.delete({
+                        where: {
+                            userId: parseInt(id)
+                        }
+                    }).catch(error => {
+                        log("Database error while deleting profile: " + error.message, LogLevel.ERROR);
+                        res.status(500).json({ message: "Database error while deleting profile." });
+                        return;
+                    });
 
-                log("Deleting image from S3...", LogLevel.VERBOSE);
-                await deleteFile(profile.image);
+                    log("Deleting image from S3...");
+                    await deleteFile(profile.image);
 
-                res.status(200).json({ message: "Profile image deleted." });
-                log("Profile image deleted.", LogLevel.VERBOSE);
-                break;
+                    res.status(200).json({ message: "Profile image deleted." });
+                    log("Profile image deleted.");
+                    break;
+                } else {
+                    res.status(500).json({ message: "Failed to delete profile from database." });
+                    log("Failed to delete profile from database.", LogLevel.ERROR);
+                    break;
+                }
 
             case "listing":
-                log("Deleting listing image...", LogLevel.VERBOSE);
+                log("Deleting listing image...");
                 const listing = await prisma.listing.findFirst({
                     where: {
                         listingId: parseInt(id),
@@ -342,25 +353,31 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
                     return;
                 });
 
-                await prisma.listing.deleteMany({
-                    where: {
-                        listingId: parseInt(id),
-                        index: parseInt(index)
-                    }
-                }).catch(error => {
-                    log("Database error while deleting listing: " + error.message, LogLevel.ERROR);
-                    res.status(500).json({ message: "Database error while deleting listing." });
-                    return;
-                });
+                if (listing) {
+                    await prisma.listing.deleteMany({
+                        where: {
+                            listingId: parseInt(id),
+                            index: parseInt(index)
+                        }
+                    }).catch(error => {
+                        log("Database error while deleting listing: " + error.message, LogLevel.ERROR);
+                        res.status(500).json({ message: "Database error while deleting listing." });
+                        return;
+                    });
 
-                log("Deleting image from S3...", LogLevel.VERBOSE);
-                await deleteFile(listing.image);
+                    log("Deleting image from S3...");
+                    await deleteFile(listing.image);
 
-                res.status(200).json({ message: "Listing image deleted." });
-                log("Listing image deleted.", LogLevel.VERBOSE);
-                break;
+                    res.status(200).json({ message: "Listing image deleted." });
+                    log("Listing image deleted.");
+                    break;
+                } else {
+                    res.status(500).json({ message: "Failed to delete listing from database." });
+                    log("Failed to delete listing from database.", LogLevel.ERROR);
+                    break;
+                }
         }
-    } catch (error) {
+    } catch (error: any) {
         res.status(500).json({
             message: 'Internal server error'
         });
@@ -379,20 +396,20 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
  */
 app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
     try {
-        log("Received API request to retrieve image.", LogLevel.VERBOSE);
-        log("Extracting information from the request...", LogLevel.VERBOSE);
+        log("Received API request to retrieve image.");
+        log("Extracting information from the request...");
         const type = req.params.type;
         const id = req.params.id;
         const index = req.params.index;
 
-        log(padText("Image type:", 16) + type, LogLevel.VERBOSE);
-        log(padText("ID:", 16) + id, LogLevel.VERBOSE);
-        log(padText("Index:", 16) + index, LogLevel.VERBOSE);
+        log(padText("Image type:", 16) + type);
+        log(padText("ID:", 16) + id);
+        log(padText("Index:", 16) + index);
 
         let key;
         switch (type) {
             case "profile":
-                log("Retrieving profile image...", LogLevel.VERBOSE);
+                log("Retrieving profile image...");
                 const profile = await prisma.profile.findUnique({
                     where: {
                         userId: parseInt(id)
@@ -403,13 +420,19 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
                     return;
                 });
 
-                key = profile.image;
-                log(`Image Key: ${key}`, LogLevel.VERBOSE);
-                log("Profile image retrieved.", LogLevel.VERBOSE);
-                break;
+                if (profile) {
+                    key = profile.image;
+                    log(`Image Key: ${key}`);
+                    log("Profile image retrieved.");
+                    break;
+                } else {
+                    res.status(500).json({ message: "Failed to retrieve profile from database." });
+                    log("Failed to retrieve profile from database.", LogLevel.ERROR);
+                    break;
+                }
 
             case "listing":
-                log("Retrieving listing image...", LogLevel.VERBOSE);
+                log("Retrieving listing image...");
                 const listing = await prisma.listing.findFirst({
                     where: {
                         listingId: parseInt(id),
@@ -421,17 +444,23 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
                     return;
                 });
 
-                key = listing.image;
-                log(`Image Key: ${key}`, LogLevel.VERBOSE);
-                log("Listing image retrieved.", LogLevel.VERBOSE);
-                break;
+                if (listing) {
+                    key = listing.image;
+                    log(`Image Key: ${key}`);
+                    log("Listing image retrieved.");
+                    break;
+                } else {
+                    res.status(500).json({ message: "Failed to retrieve listing from database." });
+                    log("Failed to retrieve listing from database.", LogLevel.ERROR);
+                    break;
+                }
         }
 
         const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
-        log("Sending image URL to client.", LogLevel.VERBOSE);
+        log("Sending image URL to client.");
         res.status(200).json({ imageUrl: url });
-        log("Image URL: " + url, LogLevel.VERBOSE);
-    } catch (error) {
+        log("Image URL: " + url);
+    } catch (error: any) {
         res.status(500).json({
             message: 'Internal server error'
         });
@@ -442,7 +471,7 @@ app.get('/api/image/retrieve/:type/:id/:index', async (req, res) => {
 
 
 // Error handling for multer errors and other unchecked errors.
-app.use((error, req, res, next) => {
+app.use((error: any, req: Request, res: Response, next: NextFunction) => {
     if (error instanceof multer.MulterError) {
         log ("File upload error: " + error.message, LogLevel.ERROR);
         res.status(400).json({
@@ -460,6 +489,7 @@ app.use((error, req, res, next) => {
 
 // Enable rate limiting for all requests to the API.
 // Currently set to 100 requests per minute for each IP address.
+const rateLimit = require('express-rate-limit')
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,
     max: 100,
@@ -467,4 +497,4 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-app.listen(7355, () => log("Starting BrowseBox indexer service on port: 7355", LogLevel.VERBOSE));
+app.listen(7355, () => log("Starting BrowseBox indexer service on port: 7355"));
