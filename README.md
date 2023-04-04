@@ -49,10 +49,15 @@ Ensure your image is up-to-date and rebuild periodically whenever neccessary. In
 
 ### Running with `docker-compose`
 
-Once you've finished building the image, run this command to start browsebox-indexer in detached mode.
+Once you've finished building the image, run this command to start the browsebox-indexer database in detached mode.
 
 ```bash
 docker-compose up -d
+```
+
+### Running the server
+```bash
+npm run start
 ```
 
 ## Licence
