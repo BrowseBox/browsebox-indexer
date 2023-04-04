@@ -56,8 +56,9 @@ docker-compose up -d
 ```
 
 ### Running the server
+To run the server in development mode use:
 ```bash
-npm run start
+npm run dev
 ```
 
 ## Licence
