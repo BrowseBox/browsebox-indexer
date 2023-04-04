@@ -27,7 +27,7 @@ Run the following command to install `npm` dependencies:
 npm install
 ```
 
-## Configuring Prisma
+### Configuring Prisma
 
 browsebox-indexer uses the [Prisma](https://www.prisma.io/) library to interact with MySQL. Before we can start interacting with the database, we need to generate the Prisma mappings.
 ```bash
