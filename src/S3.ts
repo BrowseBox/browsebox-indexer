@@ -66,7 +66,7 @@ export async function deleteFile(key: string): Promise<void> {
     try {
         await s3Client.send(new DeleteObjectCommand(deleteParams));
         log(`File deleted successfully: ${key}`);
-    } catch (error: any) {
+    } catch (error) {
         if (error instanceof Error) {
             log(`Error uploading file: ${error.message}`, LogLevel.ERROR);
             throw error;
