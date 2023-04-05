@@ -14,9 +14,13 @@ enum LogLevel {
  * @param {LogLevel} level - The log level (default: LogLevel.VERBOSE).
  */
 const log = (message: string, level: LogLevel = LogLevel.VERBOSE): void => {
-    const timestamp: string = new Date().toISOString().replace('T', ' ').substring(0, 19);
-    console.log(`${timestamp} [${level}]: ${message}`);
+    const now = new Date();
+    const localTimestamp: string = now.toLocaleString('en-US', {
+        hour12: false, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    });
+    console.log(`${localTimestamp} [${level}]: ${message}`);
 };
+
 
 /**
  * Pads a text string with spaces on the right side up to the specified length.
