@@ -59,6 +59,8 @@ app.post('/api/image/upload', upload.single('image'), async (req: Request, res: 
             res.status(400).json({ message: "Missing or invalid required parameters." });
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
+        } else {
+            log("Request validated. All required parameters present.");
         }
 
         log(padText("Image type:", 16) + type);
@@ -187,6 +189,8 @@ app.post('/api/image/update', upload.single('image'), async (req: Request, res: 
             res.status(400).json({ message: "Missing or invalid required parameters." });
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
+        } else {
+            log("Request validated. All required parameters present.");
         }
 
         log(padText("Image type:", 16) + type);
@@ -307,6 +311,8 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
             res.status(400).json({ message: "Missing or invalid required parameters." });
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
+        } else {
+            log("Request validated. All required parameters present.");
         }
 
         log(padText("Image type:", 16) + type);
@@ -412,6 +418,14 @@ app.get('/api/image/retrieve/profile/:id', async (req, res) => {
         log("Extracting information from the request...");
         const id = req.params.id;
 
+        if (!id || id === undefined) {
+            res.status(400).json({ message: "Missing or invalid required parameters." });
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
+            return;
+        } else {
+            log("Request validated. All required parameters present.");
+        }
+
         log(padText("Image type:", 16) + "profile");
         log(padText("ID:", 16) + id);
 
@@ -467,6 +481,14 @@ app.get('/api/image/retrieve/listing/:id/:index', async (req, res) => {
         log("Extracting information from the request...");
         const id = req.params.id;
         const index = req.params.index;
+
+        if (!id || id === undefined || !index || index === undefined) {
+            res.status(400).json({ message: "Missing or invalid required parameters." });
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
+            return;
+        } else {
+            log("Request validated. All required parameters present.");
+        }
 
         log(padText("Image type:", 16) + "listing");
         log(padText("ID:", 16) + id);
