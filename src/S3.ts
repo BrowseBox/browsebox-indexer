@@ -4,10 +4,10 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { log, LogLevel } from "./utils/Logger.ts";
 
-const bucketName: string = process.env.S3_BUCKET ?? "";
+const bucketName = process.env.S3_BUCKET;
 const region: string = "us-west-2";
-const accessKeyId: string = process.env.S3_KEY ?? "";
-const secretAccessKey: string =  process.env.S3_SECRET ?? "";
+const accessKeyId = process.env.S3_KEY;
+const secretAccessKey =  process.env.S3_SECRET;
 
 /**
  * An instance of the AWS S3 client with specified region and credentials.
