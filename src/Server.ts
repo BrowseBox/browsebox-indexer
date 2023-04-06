@@ -13,6 +13,8 @@ import { uploadFile, deleteFile } from './S3.ts';
 import { log, LogLevel, padText } from './utils/Logger.ts';
 import { generateImageKey } from './utils/KeyGeneration.ts';
 
+require('dotenv').config();
+
 const app: Express = express();
 const prisma = new PrismaClient();
 

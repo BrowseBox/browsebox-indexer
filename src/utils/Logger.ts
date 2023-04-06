@@ -9,11 +9,8 @@ enum LogLevel {
     ERROR = 'error',
 }
 
-/**
- * Logs a message with a specified log level and timestamp.
- * @param {string} message - The message to be logged.
- * @param {LogLevel} level - The log level (default: LogLevel.VERBOSE).
- */
+let currentLogFileName: string | null = null;
+
 const log = (message: string, level: LogLevel = LogLevel.VERBOSE): void => {
     const now = new Date();
     const localDate = now.toLocaleDateString('en-US', {
@@ -37,18 +34,17 @@ const log = (message: string, level: LogLevel = LogLevel.VERBOSE): void => {
         fs.mkdirSync(logDirectory);
     }
 
-    const logFileName = getLogFileName();
-    fs.appendFile(logDirectory + logFileName, logMessage, (err) => {
+    if (!currentLogFileName) {
+        currentLogFileName = getLogFileName();
+    }
+
+    fs.appendFile(logDirectory + currentLogFileName, logMessage + '\n', (err) => {
         if (err) {
             console.error(`Error writing to log file: ${err.message}.`);
         }
     });
 };
 
-/**
- * Returns the log file name in the format "YYYY-MM-DD-N.log" where "N" is a unique log number.
- * @returns {string} The log file name.
- */
 function getLogFileName(): string {
     const now = new Date();
     const localDate = now.toLocaleDateString('en-US', {
@@ -68,12 +64,6 @@ function getLogFileName(): string {
     return logFileName;
 }
 
-/**
- * Pads a text string with spaces on the right side up to the specified length.
- * @param {string} text - The text to be padded.
- * @param {number} length - The total length of the padded text.
- * @returns {string} The padded text.
- */
 function padText(text: string, length: number): string {
     return (text + ' '.repeat(length)).substring(0, length);
 }
