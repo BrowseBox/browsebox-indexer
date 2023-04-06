@@ -9,14 +9,13 @@ enum LogLevel {
     ERROR = 'error',
 }
 
-const now = new Date();
-
 /**
  * Logs a message with a specified log level and timestamp.
  * @param {string} message - The message to be logged.
  * @param {LogLevel} level - The log level (default: LogLevel.VERBOSE).
  */
 const log = (message: string, level: LogLevel = LogLevel.VERBOSE): void => {
+    const now = new Date();
     const localDate = now.toLocaleDateString('en-US', {
         year: 'numeric',
         month: '2-digit',
@@ -51,6 +50,7 @@ const log = (message: string, level: LogLevel = LogLevel.VERBOSE): void => {
  * @returns {string} The log file name.
  */
 function getLogFileName(): string {
+    const now = new Date();
     const localDate = now.toLocaleDateString('en-US', {
         year: 'numeric',
         month: '2-digit',
