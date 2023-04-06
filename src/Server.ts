@@ -301,7 +301,7 @@ app.post("/api/image/delete", upload.single('image'), async (req, res) => {
         const index = req.body.index;
 
         // Validate input to ensure all required parameters are present.
-        if (!type || type === undefined || !id || id === undefined || (type === 'listing' && index === undefined) || !file || (type !== 'profile' && type !== 'listing')) {
+        if (!type || type === undefined || !id || id === undefined || (type === 'listing' && index === undefined) || (type !== 'profile' && type !== 'listing')) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
