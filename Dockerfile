@@ -1,4 +1,4 @@
-FROM mysql/mysql-server:8.0.32
+FROM mysql/mysql-server:latest
 
 ENV MYSQL_DATABASE=browsebox\
     MYSQL_ROOT_PASSWORD=password \
