@@ -5,7 +5,8 @@ import express, { Express, Request } from 'express';
 
 import { PrismaClient } from '@prisma/client';
 import { log, LogLevel, padText } from '../../utils/Logger.ts';
-import { requestValidation, RequestType } from '../RequestValidation.ts';
+
+require('dotenv').config();
 
 const app: Express = express();
 const prisma = new PrismaClient();
@@ -23,17 +24,9 @@ app.get('/api/image/retrieve/profile/:id', async (req, res) => {
     let key;
 
     try {
-        log("Received API request to retrieve image.");
+        log("| Received API request to retrieve a profile image.");
         log("Extracting information from the request...");
         const id = req.params.id;
-
-        if (!requestValidation(RequestType.PROFILE, req)) {
-            res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
-            return;
-        } else {
-            log("Request validated. All required parameters present.");
-        }
 
         log(padText("Image type:", 16) + "profile");
         log(padText("ID:", 16) + id);
@@ -86,18 +79,10 @@ app.get('/api/image/retrieve/listing/:id/:index', async (req, res) => {
     let key;
 
     try {
-        log("Received API request to retrieve image.");
+        log("| Received API request to retrieve a listing image.");
         log("Extracting information from the request...");
         const id = req.params.id;
         const index = req.params.index;
-
-        if (!requestValidation(RequestType.LISTING, req)) {
-            res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
-            return;
-        } else {
-            log("Request validated. All required parameters present.");
-        }
 
         log(padText("Image type:", 16) + "listing");
         log(padText("ID:", 16) + id);

@@ -4,8 +4,10 @@
 import { Request } from 'express';
 
 enum RequestType {
-    PROFILE = 'profile',
-    LISTING = 'listing',
+    UPDATE_PROFILE = 'upload-profile',
+    UPDATE_LISTING = 'upload-listing',
+    DELETE_PROFILE = 'delete-profile',
+    DELETE_LISTING = 'delete-listing',
 }
 
 /**
@@ -16,19 +18,33 @@ enum RequestType {
  * @returns {boolean} - Returns true if the request is valid, false otherwise.
  */
 function requestValidation(requestType: string, req: Request) {
-    const type = req.body.type;
     const id = req.body.id;
     const index = req.body.index;
+    const file = req.file;
 
     switch (requestType) {
-        case RequestType.PROFILE:
+        case RequestType.UPDATE_PROFILE:
+             if (!id || id === undefined || !file || file === undefined) {
+                return false;
+             } else {
+                return true;
+            }
+
+        case RequestType.UPDATE_LISTING:
+            if (!id || id === undefined || !index || index === undefined || !file || file === undefined) {
+                return false;
+            } else {
+                return true;
+            }
+
+        case RequestType.DELETE_PROFILE:
             if (!id || id === undefined) {
                 return false;
             } else {
                 return true;
             }
 
-        case RequestType.LISTING:
+        case RequestType.DELETE_LISTING:
             if (!id || id === undefined || !index || index === undefined) {
                 return false;
             } else {

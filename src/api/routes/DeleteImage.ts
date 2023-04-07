@@ -38,11 +38,11 @@ app.post("/api/image/delete/profile", upload.single('image'), async (req, res) =
     let profile;
 
     try {
-        log("Received API request to delete image.");
+        log("| Received API request to delete a profile image.");
         log("Extracting information from the request...");
         const id = req.body.id;
 
-        if (!requestValidation(RequestType.PROFILE, req)) {
+        if (!requestValidation(RequestType.DELETE_PROFILE, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
@@ -106,12 +106,12 @@ app.post("/api/image/delete/listing", upload.single('image'), async (req, res) =
     let listing;
 
     try {
-        log("Received API request to delete image.");
+        log("| Received API request to delete a listing image.");
         log("Extracting information from the request...");
         const id = req.body.id;
         const index = req.body.index;
 
-        if (!requestValidation(RequestType.LISTING, req)) {
+        if (!requestValidation(RequestType.DELETE_LISTING, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;

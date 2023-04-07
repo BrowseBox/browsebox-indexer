@@ -170,127 +170,6 @@ app.post('/api/image/upload', upload.single('image'), async (req: Request, res: 
     }
 });
 
-/**
- * @route POST /api/image/update
- * @desc Update an existing image for a user profile or listing.
- * @param {string} type - The image type, either "profile" or "listing".
- * @param {number} id - The user ID for profiles or listing ID for listings.
- * @param {number} index - The order of the image for listing images. Only required for listing images.
- * @param {File} image - The updated image file.
- */
-app.post('/api/image/update', upload.single('image'), async (req: Request, res: Response) => {
-    try {
-        log("Received API request to update image.");
-        log("Extracting information from the request...");
-        const type = req.body.type;
-        const id = req.body.id;
-        const index = req.body.index;
-        const file = req.file;
-
-        // Validate the request to ensure all required parameters are present.
-        if (!type || type === undefined || !id || id === undefined || (type === 'listing' && index === undefined) || !file || (type !== 'profile' && type !== 'listing')) {
-            res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
-            return;
-        } else {
-            log("Request validated. All required parameters present.");
-        }
-
-        log(padText("Image type:", 16) + type);
-        log(padText("ID:", 16) + id);
-        log(padText("Index:", 16) + index);
-        log(padText("File:", 16) + file.originalname);
-
-        log("Generating image hash and image key...");
-        const imageHash = crypto.createHash('sha256').update(file.buffer).digest('hex');
-        log(`Image hash: ${imageHash}`);
-
-        const key = generateImageKey(type, imageHash, file.mimetype);
-        log(`Image key: ${key}`);
-
-        const fileBuffer = await sharp(file.buffer).toBuffer();
-        log("File buffer created.");
-
-        if (type === "profile") {
-            log("Updating profile image...");
-            log("Fetching old image key from database...");
-
-            const oldKey = await prisma.profile.findUnique({
-                where: {
-                    userId: parseInt(id)
-                }
-            }).catch(error => {
-                log("Database error while fetching old image key: " + error.message, LogLevel.ERROR);
-                res.status(500).json({ message: "Database error while fetching old image key." });
-                return;
-            });
-
-            if (oldKey) {
-                log("Updating image key in database...");
-                await prisma.profile.update({
-                    where: {
-                        userId: parseInt(id),
-                    },
-                    data: {
-                        image: key,
-                    }
-                }).catch(error => {
-                    log("Database error while updating image key: " + error.message, LogLevel.ERROR);
-                    res.status(500).json({ message: "Database error while updating image key." });
-                    return;
-                });
-
-                log("Uploading image to S3...");
-                await uploadFile(fileBuffer, key, file.mimetype);
-
-                log("Deleting old image from S3...");
-                await deleteFile(oldKey.image);
-
-                res.status(200).json({ message: "Profile image updated." });
-                log("Profile image updated.");
-            } else {
-                res.status(500).json({ message: "Failed to fetch old key from database." });
-                log("Failed to fetch old key from database.", LogLevel.ERROR);
-            }
-        }
-
-        // For listings, we are unable to delete the old image from S3 due to Prisma requiring a single filter for the where clause.
-        // This issue is relatively minor until our S3 bucket starts to fill up, so we will leave it as is for now.
-        if (type === "listing") {
-            log("Updating listing image...");
-            log("Updating listing in database...");
-
-            await prisma.listing.update({
-                where: {
-                    listingId: parseInt(id)
-                },
-                data: {
-                    index: parseInt(index),
-                    image: key,
-                }
-            }).catch(error => {
-                log("Database error while updating listing: " + error.message, LogLevel.ERROR);
-                res.status(500).json({ message: "Database error while updating listing." });
-                return;
-            });
-
-            log("Uploading image to S3...");
-            await uploadFile(fileBuffer, key, file.mimetype);
-
-            res.status(200).json({ message: "Listing image updated." });
-            log("Listing image updated.");
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            res.status(500).json({
-                message: 'Internal server error'
-            });
-
-            log("Internal server error: " + error.message, LogLevel.ERROR);
-        }
-    }
-});
-
 // Error handling for multer errors and other unchecked errors.
 app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
     if (error instanceof multer.MulterError) {
@@ -317,6 +196,9 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
+const updateImage = require('./api/routes/UpdateImage');
+app.use(updateImage);
 
 const retrieveImage = require('./api/routes/RetrieveImage');
 app.use(retrieveImage);
