@@ -5,9 +5,9 @@ import express, { Express, Request } from 'express';
 import multer, { Options } from 'multer';
 
 import { PrismaClient } from '@prisma/client';
-import { deleteFile } from '../S3.ts';
-import { log, LogLevel, padText } from '../utils/Logger.ts';
-import { requestValidation } from '../utils/RequestValidation.ts';
+import { deleteFile } from '../../S3.ts';
+import { log, LogLevel, padText } from '../../utils/Logger.ts';
+import { requestValidation } from '../RequestValidation.ts';
 
 const app: Express = express();
 const prisma = new PrismaClient();

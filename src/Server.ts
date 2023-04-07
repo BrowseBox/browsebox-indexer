@@ -447,7 +447,7 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-const deleteImage = require('./api/DeleteImage');
+const deleteImage = require('./api/routes/DeleteImage');
 app.use(deleteImage);
 
 app.listen(7355, () => log("Starting BrowseBox indexer service on port: 7355"));
