@@ -26,28 +26,28 @@ function requestValidation(requestType: string, req: Request) {
 
     switch (requestType) {
         case RequestType.UPLOAD_PROFILE || RequestType.UPDATE_PROFILE:
-            if (!id || id === undefined || !file || file === undefined) {
+            if (!id || id === undefined || id == "undefined" || !file || file === undefined) {
                 return false;
             } else {
                 return true;
             }
 
         case RequestType.UPLOAD_LISTING || RequestType.UPDATE_LISTING:
-            if (!id || id === undefined || !index || index === undefined || !file || file === undefined) {
+            if (!id || id === undefined || id == "undefined" || !index || index === undefined || index == "undefined" || !file || file === undefined) {
                 return false;
             } else {
                 return true;
             }
 
         case RequestType.DELETE_PROFILE:
-            if (!id || id === undefined) {
+            if (!id || id === undefined || id == "undefined") {
                 return false;
             } else {
                 return true;
             }
 
         case RequestType.DELETE_LISTING:
-            if (!id || id === undefined || !index || index === undefined) {
+            if (!id || id === undefined || id == "undefined" || !index || index === undefined || index == "undefined") {
                 return false;
             } else {
                 return true;
