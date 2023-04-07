@@ -47,13 +47,22 @@ This will build a fresh image with nothing stored in the database except for the
 
 Ensure your image is up-to-date and rebuild periodically whenever neccessary. In order to update the image, you must remove the image with `docker image rm [image-name]` and rerun the build command.
 
-### Running with `docker-compose`
+## Running the database
 
+There are two methods for utilizing the database.
+
+1. Running the database *LOCALLY* in detached mode
+2. Using the test cluster on AWS.
+
+#### **1. Running the database locally**
 Once you've finished building the image, run this command to start the browsebox-indexer database in detached mode.
 
 ```bash
 docker-compose up -d
 ```
+
+#### **2. Using the test cluster on AWS**
+Ask for the .env file and place it in the root of the directory. No need to run docker.
 
 ### Running the server
 ```bash
