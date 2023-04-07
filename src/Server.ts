@@ -112,7 +112,6 @@ app.post('/api/image/upload', upload.single('image'), async (req: Request, res: 
                 log("Uploading image to S3...", LogLevel.VERBOSE)
                 await uploadFile(fileBuffer, key, file.mimetype);
 
-                res.status(200).json({ message: "Image upload complete." });
                 log("Image upload complete.");
             }
         }
@@ -152,10 +151,14 @@ app.post('/api/image/upload', upload.single('image'), async (req: Request, res: 
                 log("Uploading image to S3...");
                 await uploadFile(fileBuffer, key, file.mimetype);
 
-                res.status(200).json({ message: "Image upload complete." });
                 log("Image upload complete.");
             }
         }
+
+        const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
+        log("Sending image URL to client.");
+        res.status(200).json({ message: "Image upload complete.", imageUrl: url });
+        log("Image URL: " + url);
     } catch (error) {
         if (error instanceof Error) {
             res.status(500).json({
@@ -276,121 +279,6 @@ app.post('/api/image/update', upload.single('image'), async (req: Request, res: 
 
             res.status(200).json({ message: "Listing image updated." });
             log("Listing image updated.");
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            res.status(500).json({
-                message: 'Internal server error'
-            });
-
-            log("Internal server error: " + error.message, LogLevel.ERROR);
-        }
-    }
-});
-
-/**
- * @route POST /api/image/delete
- * @desc Delete an existing image for a user profile or listing.
- * @param {string} type - The image type, either "profile" or "listing".
- * @param {number} id - The user ID for profiles or listing ID for listings.
- * @param {number} index - The order of the image for listing images. Only required for listing images.
- */
-app.post("/api/image/delete", upload.single('image'), async (req, res) => {
-    let profile;
-    let listing;
-
-    try {
-        log("Received API request to delete image.");
-        log("Extracting information from the request...");
-        const type = req.body.type;
-        const id = req.body.id;
-        const index = req.body.index;
-
-        // Validate input to ensure all required parameters are present.
-        if (!type || type === undefined || !id || id === undefined || (type === 'listing' && index === undefined) || (type !== 'profile' && type !== 'listing')) {
-            res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
-            return;
-        } else {
-            log("Request validated. All required parameters present.");
-        }
-
-        log(padText("Image type:", 16) + type);
-        log(padText("ID:", 16) + id);
-        log(padText("Index:", 16) + index);
-
-        switch (type) {
-            case "profile":
-                log("Deleting profile image...");
-                profile = await prisma.profile.findUnique({
-                    where: {
-                        userId: parseInt(id)
-                    }
-                }).catch(error => {
-                    log("Database error while fetching profile: " + error.message, LogLevel.ERROR);
-                    res.status(500).json({ message: "Database error while fetching profile." });
-                    return;
-                });
-
-                if (profile) {
-                    await prisma.profile.delete({
-                        where: {
-                            userId: parseInt(id)
-                        }
-                    }).catch(error => {
-                        log("Database error while deleting profile: " + error.message, LogLevel.ERROR);
-                        res.status(500).json({ message: "Database error while deleting profile." });
-                        return;
-                    });
-
-                    log("Deleting image from S3...");
-                    await deleteFile(profile.image);
-
-                    res.status(200).json({ message: "Profile image deleted." });
-                    log("Profile image deleted.");
-                    break;
-                } else {
-                    res.status(500).json({ message: "Failed to delete profile from database." });
-                    log("Failed to delete profile from database.", LogLevel.ERROR);
-                    break;
-                }
-
-            case "listing":
-                log("Deleting listing image...");
-                listing = await prisma.listing.findFirst({
-                    where: {
-                        listingId: parseInt(id),
-                        index: parseInt(index)
-                    }
-                }).catch(error => {
-                    log("Database error while fetching listing: " + error.message, LogLevel.ERROR);
-                    res.status(500).json({ message: "Database error while fetching listing." });
-                    return;
-                });
-
-                if (listing) {
-                    await prisma.listing.deleteMany({
-                        where: {
-                            listingId: parseInt(id),
-                            index: parseInt(index)
-                        }
-                    }).catch(error => {
-                        log("Database error while deleting listing: " + error.message, LogLevel.ERROR);
-                        res.status(500).json({ message: "Database error while deleting listing." });
-                        return;
-                    });
-
-                    log("Deleting image from S3...");
-                    await deleteFile(listing.image);
-
-                    res.status(200).json({ message: "Listing image deleted." });
-                    log("Listing image deleted.");
-                    break;
-                } else {
-                    res.status(500).json({ message: "Failed to delete listing from database." });
-                    log("Failed to delete listing from database.", LogLevel.ERROR);
-                    break;
-                }
         }
     } catch (error) {
         if (error instanceof Error) {
@@ -558,5 +446,8 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
+const deleteImage = require('./api/DeleteImage');
+app.use(deleteImage);
 
 app.listen(7355, () => log("Starting BrowseBox indexer service on port: 7355"));
