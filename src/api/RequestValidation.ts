@@ -4,8 +4,8 @@
 import { Request } from 'express';
 
 enum RequestType {
-    DELETE_PROFILE = 'delete-profile',
-    DELETE_LISTING = 'delete-listing',
+    PROFILE = 'profile',
+    LISTING = 'listing',
 }
 
 /**
@@ -21,14 +21,14 @@ function requestValidation(requestType: string, req: Request) {
     const index = req.body.index;
 
     switch (requestType) {
-        case RequestType.DELETE_PROFILE:
+        case RequestType.PROFILE:
             if (!id || id === undefined) {
                 return false;
             } else {
                 return true;
             }
 
-        case RequestType.DELETE_LISTING:
+        case RequestType.LISTING:
             if (!id || id === undefined || !index || index === undefined) {
                 return false;
             } else {
@@ -40,4 +40,4 @@ function requestValidation(requestType: string, req: Request) {
     }
 }
 
-export { requestValidation };
+export { requestValidation, RequestType };

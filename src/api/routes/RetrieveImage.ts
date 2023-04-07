@@ -2,45 +2,30 @@
 // See the LICENCE file in the repository root for full licence text.
 
 import express, { Express, Request } from 'express';
-import multer, { Options } from 'multer';
 
 import { PrismaClient } from '@prisma/client';
-import { deleteFile } from '../../S3.ts';
 import { log, LogLevel, padText } from '../../utils/Logger.ts';
 import { requestValidation, RequestType } from '../RequestValidation.ts';
 
 const app: Express = express();
 const prisma = new PrismaClient();
 
-// Multer configuration details.
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-        fileSize: 10 * 1024 * 1024
-    },
-    fileFilter: (req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Invalid file type'), false);
-        }
-    },
-} as Options);
-
 app.use(express.json());
 
 /**
- * @route POST /api/image/delete/profile
- * @desc Delete an existing image for a user profile.
+ * @route GET /api/image/retrieve/profile/:id/
+ * @desc Retrieve the image hash for a user profile.
  * @param {number} id - The user ID.
+ * @returns {string} imageHash - The hash of the requested image.
  */
-app.post("/api/image/delete/profile", upload.single('image'), async (req, res) => {
+app.get('/api/image/retrieve/profile/:id', async (req, res) => {
     let profile;
+    let key;
 
     try {
-        log("Received API request to delete image.");
+        log("Received API request to retrieve image.");
         log("Extracting information from the request...");
-        const id = req.body.id;
+        const id = req.params.id;
 
         if (!requestValidation(RequestType.PROFILE, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
@@ -50,9 +35,10 @@ app.post("/api/image/delete/profile", upload.single('image'), async (req, res) =
             log("Request validated. All required parameters present.");
         }
 
+        log(padText("Image type:", 16) + "profile");
         log(padText("ID:", 16) + id);
 
-        log("Deleting profile image...");
+        log("Retrieving profile image...");
         profile = await prisma.profile.findUnique({
             where: {
                 userId: parseInt(id)
@@ -64,27 +50,19 @@ app.post("/api/image/delete/profile", upload.single('image'), async (req, res) =
         });
 
         if (profile) {
-            await prisma.profile.delete({
-                where: {
-                    userId: parseInt(id)
-                }
-            }).catch(error => {
-                log("Database error while deleting profile: " + error.message, LogLevel.ERROR);
-                res.status(500).json({ message: "Database error while deleting profile." });
-                return;
-            });
-
-            log("Deleting image from S3...");
-            await deleteFile(profile.image);
-
-            res.status(200).json({ message: "Profile image deleted." });
-            log("Profile image deleted.");
-            return;
+            key = profile.image;
+            log(`Image Key: ${key}`);
+            log("Profile image retrieved.");
         } else {
-            res.status(500).json({ message: "Failed to delete profile from database." });
-            log("Failed to delete profile from database.", LogLevel.ERROR);
+            res.status(500).json({ message: "Failed to retrieve profile from database." });
+            log("Failed to retrieve profile from database.", LogLevel.ERROR);
             return;
         }
+
+        const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
+        log("Sending image URL to client.");
+        res.status(200).json({ imageUrl: url });
+        log("Image URL: " + url);
     } catch (error) {
         if (error instanceof Error) {
             res.status(500).json({
@@ -97,19 +75,21 @@ app.post("/api/image/delete/profile", upload.single('image'), async (req, res) =
 });
 
 /**
- * @route POST /api/image/delete/listing
- * @desc Delete an existing image for a listing.
+ * @route GET /api/image/retrieve/listing/:id/:index
+ * @desc Retrieve the image hash for a listing.
  * @param {number} id - The listing ID.
  * @param {number} index - The order of the image for listing images.
+ * @returns {string} imageHash - The hash of the requested image.
  */
-app.post("/api/image/delete/listing", upload.single('image'), async (req, res) => {
+app.get('/api/image/retrieve/listing/:id/:index', async (req, res) => {
     let listing;
+    let key;
 
     try {
-        log("Received API request to delete image.");
+        log("Received API request to retrieve image.");
         log("Extracting information from the request...");
-        const id = req.body.id;
-        const index = req.body.index;
+        const id = req.params.id;
+        const index = req.params.index;
 
         if (!requestValidation(RequestType.LISTING, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
@@ -119,10 +99,11 @@ app.post("/api/image/delete/listing", upload.single('image'), async (req, res) =
             log("Request validated. All required parameters present.");
         }
 
+        log(padText("Image type:", 16) + "listing");
         log(padText("ID:", 16) + id);
         log(padText("Index:", 16) + index);
 
-        log("Deleting listing image...");
+        log("Retrieving listing image...");
         listing = await prisma.listing.findFirst({
             where: {
                 listingId: parseInt(id),
@@ -135,29 +116,19 @@ app.post("/api/image/delete/listing", upload.single('image'), async (req, res) =
         });
 
         if (listing) {
-            await prisma.listing.deleteMany({
-                where: {
-                    listingId: parseInt(id),
-                    index: parseInt(index)
-                }
-            }).catch(error => {
-                log("Database error while deleting listing: " + error.message, LogLevel.ERROR);
-                res.status(500).json({ message: "Database error while deleting listing." });
-                return;
-            });
-
-            log("Deleting image from S3...");
-            await deleteFile(listing.image);
-
-            res.status(200).json({ message: "Listing image deleted." });
-            log("Listing image deleted.");
-            return;
+            key = listing.image;
+            log(`Image Key: ${key}`);
+            log("Listing image retrieved.");
         } else {
-            res.status(500).json({ message: "Failed to delete listing from database." });
-            log("Failed to delete listing from database.", LogLevel.ERROR);
+            res.status(500).json({ message: "Failed to retrieve listing from database." });
+            log("Failed to retrieve listing from database.", LogLevel.ERROR);
             return;
         }
 
+        const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
+        log("Sending image URL to client.");
+        res.status(200).json({ imageUrl: url });
+        log("Image URL: " + url);
     } catch (error) {
         if (error instanceof Error) {
             res.status(500).json({
