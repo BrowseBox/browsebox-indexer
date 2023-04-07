@@ -25,28 +25,14 @@ function requestValidation(requestType: string, req: Request) {
     const file = req.file;
 
     switch (requestType) {
-        case RequestType.UPLOAD_PROFILE:
+        case RequestType.UPLOAD_PROFILE || RequestType.UPDATE_PROFILE:
             if (!id || id === undefined || !file || file === undefined) {
                 return false;
             } else {
                 return true;
             }
 
-        case RequestType.UPLOAD_LISTING:
-            if (!id || id === undefined || !index || index === undefined || !file || file === undefined) {
-                return false;
-            } else {
-                return true;
-            }
-
-        case RequestType.UPDATE_PROFILE:
-             if (!id || id === undefined || !file || file === undefined) {
-                return false;
-             } else {
-                return true;
-            }
-
-        case RequestType.UPDATE_LISTING:
+        case RequestType.UPLOAD_LISTING || RequestType.UPDATE_LISTING:
             if (!id || id === undefined || !index || index === undefined || !file || file === undefined) {
                 return false;
             } else {
