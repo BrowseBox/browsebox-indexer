@@ -4,6 +4,8 @@
 import { Request } from 'express';
 
 enum RequestType {
+    UPLOAD_PROFILE = 'upload-profile',
+    UPLOAD_LISTING = 'upload-listing',
     UPDATE_PROFILE = 'upload-profile',
     UPDATE_LISTING = 'upload-listing',
     DELETE_PROFILE = 'delete-profile',
@@ -23,6 +25,20 @@ function requestValidation(requestType: string, req: Request) {
     const file = req.file;
 
     switch (requestType) {
+        case RequestType.UPLOAD_PROFILE:
+            if (!id || id === undefined || !file || file === undefined) {
+                return false;
+            } else {
+                return true;
+            }
+
+        case RequestType.UPLOAD_LISTING:
+            if (!id || id === undefined || !index || index === undefined || !file || file === undefined) {
+                return false;
+            } else {
+                return true;
+            }
+
         case RequestType.UPDATE_PROFILE:
              if (!id || id === undefined || !file || file === undefined) {
                 return false;
@@ -50,9 +66,6 @@ function requestValidation(requestType: string, req: Request) {
             } else {
                 return true;
             }
-
-        default:
-            return true;
     }
 }
 
