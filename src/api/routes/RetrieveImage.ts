@@ -1,7 +1,7 @@
 // Copyright (c) BrowseBox. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-import express, { Express, Request } from 'express';
+import express, { Express } from 'express';
 
 import { PrismaClient } from '@prisma/client';
 import { log, LogLevel, padText } from '../../utils/Logger.ts';

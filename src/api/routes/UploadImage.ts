@@ -4,11 +4,11 @@
 import sharp from 'sharp';
 import crypto from 'crypto';
 
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response } from 'express';
 import multer, { Options } from 'multer';
 
 import { PrismaClient } from '@prisma/client';
-import { uploadFile, deleteFile } from '../../S3.ts';
+import { uploadFile } from '../../S3.ts';
 import { log, LogLevel, padText } from '../../utils/Logger.ts';
 import { generateImageKey } from '../../utils/KeyGeneration.ts';
 import { requestValidation, RequestType } from '../RequestValidation.ts';
