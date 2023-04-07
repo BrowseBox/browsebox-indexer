@@ -16,10 +16,10 @@ services:
         restart: always
         networks:
             development:
-                ipv4_address: 192.168.92.20
+                ipv4_address: 192.168.93.20
 networks:
     development:
         ipam:
             driver: default
             config:
-                - subnet: "192.168.92.0/24"
+                - subnet: "192.168.93.0/24"
