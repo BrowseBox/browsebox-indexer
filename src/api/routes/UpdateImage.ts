@@ -110,7 +110,6 @@ app.post('/api/image/update/profile', upload.single('image'), async (req: Reques
             log("Deleting old image from S3...");
             await deleteFile(oldKey.image);
 
-            res.status(200).json({ message: "Profile image updated." });
             log("Profile image updated.");
         } else {
             res.status(500).json({ message: "Failed to fetch old key from database." });
@@ -118,6 +117,12 @@ app.post('/api/image/update/profile', upload.single('image'), async (req: Reques
             return;
         }
 
+        log("Listing image updated.");
+
+        const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
+        log("Sending image URL to client.");
+        res.status(200).json({ message: "Listing image updated.", imageUrl: url });
+        log("Image URL: " + url);
     } catch (error) {
         if (error instanceof Error) {
             res.status(500).json({
@@ -196,8 +201,12 @@ app.post('/api/image/update/listing', upload.single('image'), async (req: Reques
         log("Uploading image to S3...");
         await uploadFile(fileBuffer, key, file.mimetype);
 
-        res.status(200).json({ message: "Listing image updated." });
         log("Listing image updated.");
+
+        const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
+        log("Sending image URL to client.");
+        res.status(200).json({ message: "Listing image updated.", imageUrl: url });
+        log("Image URL: " + url);
     } catch (error) {
         if (error instanceof Error) {
             res.status(500).json({
