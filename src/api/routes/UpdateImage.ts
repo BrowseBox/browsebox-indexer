@@ -117,11 +117,11 @@ app.post('/api/image/update/profile', upload.single('image'), async (req: Reques
             return;
         }
 
-        log("Listing image updated.");
+        log("Profile image updated.");
 
         const url = "https://" + process.env.S3_BUCKET + ".s3.us-west-2.amazonaws.com/" + key;
         log("Sending image URL to client.");
-        res.status(200).json({ message: "Listing image updated.", imageUrl: url });
+        res.status(200).json({ message: "Profile image updated.", imageUrl: url });
         log("Image URL: " + url);
     } catch (error) {
         if (error instanceof Error) {
