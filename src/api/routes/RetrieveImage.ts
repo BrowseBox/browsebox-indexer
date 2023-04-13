@@ -24,7 +24,7 @@ app.get('/api/image/retrieve/profile/:id', async (req, res) => {
     let key;
 
     try {
-        log("| Received API request to retrieve a profile image.");
+        log("| Received API request to retrieve a profile image. (" + req.socket.remoteAddress + ")");
         log("Extracting information from the request...");
         const id = req.params.id;
 
@@ -79,7 +79,7 @@ app.get('/api/image/retrieve/listing/:id/:index', async (req, res) => {
     let key;
 
     try {
-        log("| Received API request to retrieve a listing image.");
+        log("| Received API request to retrieve a listing image. (" + req.socket.remoteAddress + ")");
         log("Extracting information from the request...");
         const id = req.params.id;
         const index = req.params.index;

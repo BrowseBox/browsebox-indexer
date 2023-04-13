@@ -38,7 +38,7 @@ app.post("/api/image/delete/profile", upload.single('image'), async (req, res) =
     let profile;
 
     try {
-        log("| Received API request to delete a profile image.");
+        log("| Received API request to delete a profile image. (" + req.socket.remoteAddress + ")");
         log("Extracting information from the request...");
         const id = req.body.id;
 
@@ -107,7 +107,7 @@ app.post("/api/image/delete/listing", upload.single('image'), async (req, res) =
     let listing;
 
     try {
-        log("| Received API request to delete a listing image.");
+        log("| Received API request to delete a listing image. (" + req.socket.remoteAddress + ")");
         log("Extracting information from the request...");
         const id = req.body.id;
         const index = req.body.index;

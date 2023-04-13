@@ -44,7 +44,7 @@ app.use(express.json());
  */
 app.post('/api/image/upload/profile', upload.single('image'), async (req: Request, res: Response) => {
     try {
-        log("| Received API request to upload a profile image.");
+        log("| Received API request to upload a profile image. (" + req.socket.remoteAddress + ")");
         log("Extracting information from the request...");
         const id = req.body.id;
         const file = req.file;
@@ -139,7 +139,7 @@ app.post('/api/image/upload/profile', upload.single('image'), async (req: Reques
  */
 app.post('/api/image/upload/listing', upload.single('image'), async (req: Request, res: Response) => {
     try {
-        log("| Received API request to upload a listing image.");
+        log("| Received API request to upload a listing image. (" + req.socket.remoteAddress + ")");
         log("Extracting information from the request...");
 
         const id = req.body.id;
