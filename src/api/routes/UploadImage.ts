@@ -49,20 +49,22 @@ app.post('/api/image/upload/profile', upload.single('image'), async (req: Reques
         const id = req.body.id;
         const file = req.file;
 
-        if (!requestValidation(RequestType.UPLOAD_PROFILE, req)) {
-            res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
-            return;
-        } else {
-            log("Request validated. All required parameters present.");
-        }
-
         // For some reason typescript intellisense doesn't recognise that we're already checking for validity via the requestValidation function.
         // This is just a workaround to make intellisense happy.
         if (!file) {
             res.status(400).json({ message: "Missing image file." });
             log("Missing image file. Aborting.", LogLevel.WARNING);
             return;
+        }
+
+        if (!requestValidation(RequestType.UPLOAD_PROFILE, req)) {
+            res.status(400).json({ message: "Missing or invalid required parameters." });
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
+            log(padText("ID:", 16) + id);
+            log(padText("File:", 16) + file.originalname);
+            return;
+        } else {
+            log("Request validated. All required parameters present.");
         }
 
         log(padText("ID:", 16) + id);
@@ -144,20 +146,23 @@ app.post('/api/image/upload/listing', upload.single('image'), async (req: Reques
         const index = req.body.index;
         const file = req.file;
 
-        if (!requestValidation(RequestType.UPLOAD_LISTING, req)) {
-            res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
-            return;
-        } else {
-            log("Request validated. All required parameters present.");
-        }
-
         // For some reason typescript intellisense doesn't recognise that we're already checking for validity via the requestValidation function.
         // This is just a workaround to make intellisense happy.
         if (!file) {
             res.status(400).json({ message: "Missing image file." });
             log("Missing image file. Aborting.", LogLevel.WARNING);
             return;
+        }
+
+        if (!requestValidation(RequestType.UPLOAD_LISTING, req)) {
+            res.status(400).json({ message: "Missing or invalid required parameters." });
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
+            log(padText("ID:", 16) + id);
+            log(padText("Index:", 16) + index);
+            log(padText("File:", 16) + file.originalname);
+            return;
+        } else {
+            log("Request validated. All required parameters present.");
         }
 
         log(padText("ID:", 16) + id);
