@@ -59,9 +59,9 @@ app.post('/api/image/upload/profile', upload.single('image'), async (req: Reques
 
         if (!requestValidation(RequestType.UPLOAD_PROFILE, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             log(padText("ID:", 16) + id);
             log(padText("File:", 16) + file.originalname);
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
         } else {
             log("Request validated. All required parameters present.");
@@ -156,10 +156,10 @@ app.post('/api/image/upload/listing', upload.single('image'), async (req: Reques
 
         if (!requestValidation(RequestType.UPLOAD_LISTING, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
-            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             log(padText("ID:", 16) + id);
             log(padText("Index:", 16) + index);
             log(padText("File:", 16) + file.originalname);
+            log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
         } else {
             log("Request validated. All required parameters present.");

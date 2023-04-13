@@ -44,6 +44,7 @@ app.post("/api/image/delete/profile", upload.single('image'), async (req, res) =
 
         if (!requestValidation(RequestType.DELETE_PROFILE, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
+            log(padText("ID:", 16) + id);
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
         } else {
@@ -113,6 +114,8 @@ app.post("/api/image/delete/listing", upload.single('image'), async (req, res) =
 
         if (!requestValidation(RequestType.DELETE_LISTING, req)) {
             res.status(400).json({ message: "Missing or invalid required parameters." });
+            log(padText("ID:", 16) + id);
+            log(padText("Index:", 16) + index);
             log("Missing or invalid required parameters. Aborting.", LogLevel.WARNING);
             return;
         } else {
